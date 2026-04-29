@@ -3,4 +3,7 @@
   publish = "dist/client"
 
 [functions]
-  timeout = 60
+  node_bundler = "esbuild"
+
+[functions.timeout]
+  background = 60
