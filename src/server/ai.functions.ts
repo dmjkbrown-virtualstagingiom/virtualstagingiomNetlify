@@ -27,7 +27,7 @@ export const generateRoomImageFn = createServerFn({ method: "POST" })
     const store = getStore("room-images");
     const filename = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
 
-    await store.set(filename, buffer, {
+    const { url: publicImageUrl } = await store.set(filename, buffer, {
       metadata: { contentType: file.type },
       access: "public",
     });
@@ -37,21 +37,15 @@ export const generateRoomImageFn = createServerFn({ method: "POST" })
         auth: process.env.REPLICATE_API_TOKEN,
       });
 
-      const mimeType = file.type || "image/jpeg";
-      const base64Image = Buffer.from(buffer).toString("base64");
-      const dataUri = `data:${mimeType};base64,${base64Image}`;
-
       const prompt = STYLE_PROMPTS[style] ||
         `Redesign this room in a ${style} interior design style. Professional real estate photograph, perfect lighting, wide angle.`;
 
       const output = await replicate.run(
-        "openai/gpt-image-1.5",
+        "google/nano-banana",
         {
           input: {
             prompt,
-            image: dataUri,
-            quality: "low",
-            output_format: "jpeg",
+            image_input: [publicImageUrl],
           }
         }
       );
