@@ -27,18 +27,16 @@ export const generateRoomImageFn = createServerFn({ method: "POST" })
     const store = getStore("room-images");
     const filename = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
 
-    await store.set(filename, buffer, {
+    // Save to Netlify Blobs and get a public URL
+    const { url: publicImageUrl } = await store.set(filename, buffer, {
       metadata: { contentType: file.type },
+      access: "public",
     });
 
     try {
       const replicate = new Replicate({
         auth: process.env.REPLICATE_API_TOKEN,
       });
-
-      const mimeType = file.type || "image/jpeg";
-      const base64Image = Buffer.from(buffer).toString("base64");
-      const dataUri = `data:${mimeType};base64,${base64Image}`;
 
       const prompt = STYLE_PROMPTS[style] ||
         `Redesign this room in a ${style} interior design style. Professional real estate photograph, perfect lighting, wide angle.`;
@@ -47,10 +45,9 @@ export const generateRoomImageFn = createServerFn({ method: "POST" })
         "prunaai/p-image-edit",
         {
           input: {
-            image: dataUri,
+            images: [publicImageUrl],
             prompt,
-            guidance_scale: 7.5,
-            num_inference_steps: 20,
+            aspect_ratio: "match_input_image",
           }
         }
       );
@@ -60,6 +57,8 @@ export const generateRoomImageFn = createServerFn({ method: "POST" })
         generatedUrl = typeof output[0] === "string" ? output[0] : String(output[0]);
       } else if (typeof output === "string") {
         generatedUrl = output;
+      } else if (output && typeof (output as any).url === "string") {
+        generatedUrl = (output as any).url;
       } else {
         console.error("Unexpected output format:", output);
         throw new Error("Unexpected output format from Replicate");
