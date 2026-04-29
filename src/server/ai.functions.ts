@@ -51,7 +51,7 @@ export const generateRoomImageFn = createServerFn({ method: "POST" })
             prompt,
             image: dataUri,
             quality: "low",
-            output_format: "jpg",
+            output_format: "jpeg",
           }
         }
       );
