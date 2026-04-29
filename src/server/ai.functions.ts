@@ -27,8 +27,7 @@ export const generateRoomImageFn = createServerFn({ method: "POST" })
     const store = getStore("room-images");
     const filename = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
 
-    // Save to Netlify Blobs and get a public URL
-    const { url: publicImageUrl } = await store.set(filename, buffer, {
+    await store.set(filename, buffer, {
       metadata: { contentType: file.type },
       access: "public",
     });
@@ -38,16 +37,21 @@ export const generateRoomImageFn = createServerFn({ method: "POST" })
         auth: process.env.REPLICATE_API_TOKEN,
       });
 
+      const mimeType = file.type || "image/jpeg";
+      const base64Image = Buffer.from(buffer).toString("base64");
+      const dataUri = `data:${mimeType};base64,${base64Image}`;
+
       const prompt = STYLE_PROMPTS[style] ||
         `Redesign this room in a ${style} interior design style. Professional real estate photograph, perfect lighting, wide angle.`;
 
       const output = await replicate.run(
-        "prunaai/p-image-edit",
+        "openai/gpt-image-1.5",
         {
           input: {
-            images: [publicImageUrl],
             prompt,
-            aspect_ratio: "match_input_image",
+            image: dataUri,
+            quality: "low",
+            output_format: "jpg",
           }
         }
       );
@@ -69,7 +73,7 @@ export const generateRoomImageFn = createServerFn({ method: "POST" })
         originalImageKey: filename,
         generatedImageUrl: generatedUrl,
       };
-  } catch (error) {
+    } catch (error) {
       console.error("AI Generation failed:", error);
 
       return {
