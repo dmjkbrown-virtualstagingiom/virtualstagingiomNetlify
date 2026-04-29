@@ -91,11 +91,52 @@ function BuyerTool() {
     if (!files) return;
     Array.from(files).forEach((file) => {
       if (!file.type.startsWith("image/")) return;
-      const url = URL.createObjectURL(file);
-      setImages((prev) => [
-        ...prev,
-        { url, name: file.name.replace(/\.[^.]+$/, ""), selected: true, file },
-      ]);
+
+      // Compress image to max 1024px and convert to JPEG for smaller file size
+      const img = new Image();
+      const objectUrl = URL.createObjectURL(file);
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const maxSize = 1024;
+        let { width, height } = img;
+        if (width > maxSize || height > maxSize) {
+          if (width > height) {
+            height = Math.round((height * maxSize) / width);
+            width = maxSize;
+          } else {
+            width = Math.round((width * maxSize) / height);
+            height = maxSize;
+          }
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d")!;
+        ctx.drawImage(img, 0, 0, width, height);
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) return;
+            const compressedFile = new File(
+              [blob],
+              file.name.replace(/\.[^.]+$/, ".jpg"),
+              { type: "image/jpeg" }
+            );
+            const url = URL.createObjectURL(blob);
+            setImages((prev) => [
+              ...prev,
+              {
+                url,
+                name: file.name.replace(/\.[^.]+$/, ""),
+                selected: true,
+                file: compressedFile,
+              },
+            ]);
+            URL.revokeObjectURL(objectUrl);
+          },
+          "image/jpeg",
+          0.85
+        );
+      };
+      img.src = objectUrl;
     });
   }, []);
 
