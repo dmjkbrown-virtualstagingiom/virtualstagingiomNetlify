@@ -23,7 +23,6 @@ export const generateRoomImageFn = createServerFn({ method: "POST" })
       throw new Error("File and style are required");
     }
 
-    // Save uploaded photo temporarily to Netlify Blobs
     const buffer = await file.arrayBuffer();
     const store = getStore("room-images");
     const filename = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
@@ -45,12 +44,13 @@ export const generateRoomImageFn = createServerFn({ method: "POST" })
         `Redesign this room in a ${style} interior design style. Professional real estate photograph, perfect lighting, wide angle.`;
 
       const output = await replicate.run(
-        "google/nano-banana-2",
+        "prunaai/p-image-edit",
         {
           input: {
+            image: dataUri,
             prompt,
-            image_input: [dataUri],
-            output_format: "jpg",
+            guidance_scale: 7.5,
+            num_inference_steps: 20,
           }
         }
       );
