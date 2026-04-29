@@ -27,10 +27,13 @@ export const generateRoomImageFn = createServerFn({ method: "POST" })
     const store = getStore("room-images");
     const filename = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
 
-    const { url: publicImageUrl } = await store.set(filename, buffer, {
+    await store.set(filename, buffer, {
       metadata: { contentType: file.type },
-      access: "public",
     });
+
+    const mimeType = file.type || "image/jpeg";
+    const base64Image = Buffer.from(buffer).toString("base64");
+    const dataUri = `data:${mimeType};base64,${base64Image}`;
 
     try {
       const replicate = new Replicate({
@@ -45,7 +48,7 @@ export const generateRoomImageFn = createServerFn({ method: "POST" })
         {
           input: {
             prompt,
-            image_input: [publicImageUrl],
+            image_input: [dataUri],
           }
         }
       );
