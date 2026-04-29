@@ -1,5 +1,4 @@
 import { createServerFn } from "@tanstack/react-start";
-import { getStore } from "@netlify/blobs";
 import Replicate from "replicate";
 
 const STYLE_PROMPTS: Record<string, string> = {
@@ -14,26 +13,13 @@ const STYLE_PROMPTS: Record<string, string> = {
 };
 
 export const generateRoomImageFn = createServerFn({ method: "POST" })
-  .inputValidator((formData: FormData) => formData)
-  .handler(async ({ data: formData }) => {
-    const file = formData.get("file") as File;
-    const style = formData.get("style") as string;
+  .inputValidator((input: { imageDataUri: string; style: string }) => input)
+  .handler(async ({ data }) => {
+    const { imageDataUri, style } = data;
 
-    if (!file || !style) {
-      throw new Error("File and style are required");
+    if (!imageDataUri || !style) {
+      throw new Error("Image data and style are required");
     }
-
-    const buffer = await file.arrayBuffer();
-    const store = getStore("room-images");
-    const filename = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
-
-    await store.set(filename, buffer, {
-      metadata: { contentType: file.type },
-    });
-
-    const mimeType = file.type || "image/jpeg";
-    const base64Image = Buffer.from(buffer).toString("base64");
-    const dataUri = `data:${mimeType};base64,${base64Image}`;
 
     try {
       const replicate = new Replicate({
@@ -47,11 +33,10 @@ export const generateRoomImageFn = createServerFn({ method: "POST" })
         model: "google/nano-banana",
         input: {
           prompt,
-          image_input: [dataUri],
+          image_input: [imageDataUri],
         },
       });
 
-      // Poll until complete
       while (prediction.status !== "succeeded" && prediction.status !== "failed") {
         await new Promise((resolve) => setTimeout(resolve, 1000));
         prediction = await replicate.predictions.get(prediction.id);
@@ -61,40 +46,24 @@ export const generateRoomImageFn = createServerFn({ method: "POST" })
         throw new Error(`Prediction failed: ${prediction.error}`);
       }
 
-      console.log("Full prediction:", JSON.stringify(prediction));
-
       let generatedUrl = "";
-
       if (typeof prediction.output === "string" && prediction.output.startsWith("http")) {
         generatedUrl = prediction.output;
       } else if (Array.isArray(prediction.output) && prediction.output.length > 0) {
-        generatedUrl = typeof prediction.output[0] === "string" ? prediction.output[0] : String(prediction.output[0]);
-      } else if (prediction.urls?.stream) {
-        // Fetch the actual image from the stream URL
-        const streamRes = await fetch(prediction.urls.stream, {
-          headers: { "Authorization": `Bearer ${process.env.REPLICATE_API_TOKEN}` }
-        });
-        const blob = await streamRes.blob();
-        const arrayBuffer = await blob.arrayBuffer();
-        const base64 = Buffer.from(arrayBuffer).toString("base64");
-        generatedUrl = `data:image/jpeg;base64,${base64}`;
+        generatedUrl = String(prediction.output[0]);
       } else {
-        throw new Error(`No output URL found: ${JSON.stringify(prediction.output)}`);
+        throw new Error(`Unknown output format: ${JSON.stringify(prediction.output)}`);
       }
 
       return {
         success: true,
-        originalImageKey: filename,
         generatedImageUrl: generatedUrl,
       };
     } catch (error) {
       console.error("AI Generation failed:", error);
-
       return {
         success: false,
-        originalImageKey: filename,
-        generatedImageUrl:
-          "https://images.unsplash.com/photo-1600607686527-6fb886090705?q=80&w=1024&auto=format&fit=crop",
+        generatedImageUrl: "https://images.unsplash.com/photo-1600607686527-6fb886090705?q=80&w=1024&auto=format&fit=crop",
         warning: `AI generation failed: ${error instanceof Error ? error.message : String(error)}`,
       };
     }
