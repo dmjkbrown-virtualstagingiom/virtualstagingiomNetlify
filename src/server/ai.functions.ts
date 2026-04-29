@@ -85,4 +85,3 @@ export const generateRoomImageFn = createServerFn({ method: "POST" })
       };
     }
   });
-  });
