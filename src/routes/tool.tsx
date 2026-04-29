@@ -172,11 +172,14 @@ function BuyerTool() {
         }
 
         if (file) {
-          const formData = new FormData();
-          formData.append("file", file);
-          formData.append("style", selectedStyle);
+          const imageDataUri = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (e) => resolve(e.target?.result as string);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+          });
 
-          const result = await generateRoomImageFn({ data: formData });
+          const result = await generateRoomImageFn({ data: { imageDataUri, style: selectedStyle } });
           updatedImages[imageIndex].afterUrl = result.generatedImageUrl;
         }
       } catch (error) {
@@ -1147,4 +1150,5 @@ function CheckIcon() {
     </svg>
   );
 }
+
 
