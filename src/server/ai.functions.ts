@@ -43,7 +43,6 @@ export const generateRoomImageFn = createServerFn({ method: "POST" })
       const prompt = STYLE_PROMPTS[style] ||
         `Redesign this room in a ${style} interior design style. Professional real estate photograph, perfect lighting, wide angle.`;
 
-      // Use predictions API to properly wait for completion
       let prediction = await replicate.predictions.create({
         model: "google/nano-banana",
         input: {
@@ -62,18 +61,25 @@ export const generateRoomImageFn = createServerFn({ method: "POST" })
         throw new Error(`Prediction failed: ${prediction.error}`);
       }
 
-      const output = prediction.output;
-      console.log("Prediction output:", JSON.stringify(output));
+      console.log("Full prediction:", JSON.stringify(prediction));
 
       let generatedUrl = "";
-      if (typeof output === "string" && output.startsWith("http")) {
-        generatedUrl = output;
-      } else if (Array.isArray(output) && output.length > 0) {
-        generatedUrl = typeof output[0] === "string" ? output[0] : String(output[0]);
-      } else if (output && typeof (output as any).url === "string") {
-        generatedUrl = (output as any).url;
+
+      if (typeof prediction.output === "string" && prediction.output.startsWith("http")) {
+        generatedUrl = prediction.output;
+      } else if (Array.isArray(prediction.output) && prediction.output.length > 0) {
+        generatedUrl = typeof prediction.output[0] === "string" ? prediction.output[0] : String(prediction.output[0]);
+      } else if (prediction.urls?.stream) {
+        // Fetch the actual image from the stream URL
+        const streamRes = await fetch(prediction.urls.stream, {
+          headers: { "Authorization": `Bearer ${process.env.REPLICATE_API_TOKEN}` }
+        });
+        const blob = await streamRes.blob();
+        const arrayBuffer = await blob.arrayBuffer();
+        const base64 = Buffer.from(arrayBuffer).toString("base64");
+        generatedUrl = `data:image/jpeg;base64,${base64}`;
       } else {
-        throw new Error(`Unknown output format: ${JSON.stringify(output)}`);
+        throw new Error(`No output URL found: ${JSON.stringify(prediction.output)}`);
       }
 
       return {
