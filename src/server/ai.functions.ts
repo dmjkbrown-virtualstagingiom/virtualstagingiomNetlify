@@ -80,3 +80,4 @@ export const generateRoomImageFn = createServerFn({ method: "POST" })
         warning: `AI generation failed: ${error instanceof Error ? error.message : String(error)}`,
       };
     }
+  });
