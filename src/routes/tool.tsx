@@ -121,16 +121,22 @@ function BuyerTool() {
       const imageIndex = images.findIndex((orig) => orig.name === img.name);
 
       try {
-        if (img.file) {
+        let file = img.file;
+
+        // For demo images that have no File object, fetch the URL and convert to a File
+        if (!file && img.url) {
+          const res = await fetch(img.url);
+          const blob = await res.blob();
+          file = new File([blob], `${img.name}.webp`, { type: blob.type || "image/webp" });
+        }
+
+        if (file) {
           const formData = new FormData();
-          formData.append("file", img.file);
+          formData.append("file", file);
           formData.append("style", selectedStyle);
 
           const result = await generateRoomImageFn({ data: formData });
           updatedImages[imageIndex].afterUrl = result.generatedImageUrl;
-        } else {
-          // Mock behavior for demo images (they don't have a File object, just an afterUrl)
-          await new Promise((resolve) => setTimeout(resolve, 1800));
         }
       } catch (error) {
         console.error("Generation failed for", img.name, error);
