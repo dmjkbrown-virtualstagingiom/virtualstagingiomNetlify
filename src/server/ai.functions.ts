@@ -69,18 +69,14 @@ export const generateRoomImageFn = createServerFn({ method: "POST" })
         originalImageKey: filename,
         generatedImageUrl: generatedUrl,
       };
-    } catch (error) {
+  } catch (error) {
       console.error("AI Generation failed:", error);
 
-      await new Promise((resolve) => setTimeout(resolve, 3000));
-
       return {
-        success: true,
+        success: false,
         originalImageKey: filename,
         generatedImageUrl:
           "https://images.unsplash.com/photo-1600607686527-6fb886090705?q=80&w=1024&auto=format&fit=crop",
-        warning:
-          "AI generation failed or not configured. Returning fallback image.",
+        warning: `AI generation failed: ${error instanceof Error ? error.message : String(error)}`,
       };
     }
-  });
