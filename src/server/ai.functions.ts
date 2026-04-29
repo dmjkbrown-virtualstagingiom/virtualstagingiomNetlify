@@ -53,16 +53,28 @@ export const generateRoomImageFn = createServerFn({ method: "POST" })
         }
       );
 
+      console.log("Replicate output:", JSON.stringify(output));
+
       let generatedUrl = "";
+
       if (Array.isArray(output) && output.length > 0) {
-        generatedUrl = typeof output[0] === "string" ? output[0] : String(output[0]);
+        const first = output[0];
+        if (typeof first === "string") {
+          generatedUrl = first;
+        } else if (first && typeof first === "object" && "url" in first) {
+          generatedUrl = String((first as any).url);
+        } else {
+          generatedUrl = String(first);
+        }
       } else if (typeof output === "string") {
         generatedUrl = output;
       } else if (output && typeof (output as any).url === "string") {
         generatedUrl = (output as any).url;
+      } else if (output && typeof output === "object") {
+        console.log("Full output object:", JSON.stringify(output));
+        throw new Error(`Unknown output format: ${JSON.stringify(output)}`);
       } else {
-        console.error("Unexpected output format:", output);
-        throw new Error("Unexpected output format from Replicate");
+        throw new Error(`Unknown output format: ${JSON.stringify(output)}`);
       }
 
       return {
