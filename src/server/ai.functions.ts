@@ -13,6 +13,35 @@ const STYLE_PROMPTS: Record<string, string> = {
   biophilic: "Redesign this room in a biophilic interior design style. Living plant walls, abundant greenery, natural wood and stone materials, earthy tones, organic shapes, connection to nature.",
 };
 
+async function runWithRetry(replicate: Replicate, input: object, maxRetries = 3): Promise<string> {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const output = await replicate.run("google/nano-banana", { input });
+
+      if (typeof output === "string" && output.startsWith("http")) {
+        return output;
+      } else if (Array.isArray(output) && output.length > 0) {
+        const first = output[0];
+        if (typeof first === "string") return first;
+        if (first && typeof first === "object" && "url" in first) return String((first as any).url);
+      } else if (output && typeof (output as any).url === "string") {
+        return (output as any).url;
+      }
+
+      throw new Error(`Unknown output format: ${JSON.stringify(output)}`);
+    } catch (error: any) {
+      const is429 = error?.message?.includes("429") || error?.message?.includes("Too Many Requests");
+      if (is429 && attempt < maxRetries) {
+        console.log(`Rate limited, retrying in ${attempt * 3}s (attempt ${attempt}/${maxRetries})`);
+        await new Promise((resolve) => setTimeout(resolve, attempt * 3000));
+        continue;
+      }
+      throw error;
+    }
+  }
+  throw new Error("Max retries exceeded");
+}
+
 export const generateRoomImageFn = createServerFn({ method: "POST" })
   .inputValidator((formData: FormData) => formData)
   .handler(async ({ data: formData }) => {
@@ -43,39 +72,10 @@ export const generateRoomImageFn = createServerFn({ method: "POST" })
       const prompt = STYLE_PROMPTS[style] ||
         `Redesign this room in a ${style} interior design style. Professional real estate photograph, perfect lighting, wide angle.`;
 
-      const output = await replicate.run(
-        "google/nano-banana",
-        {
-          input: {
-            prompt,
-            image_input: [dataUri],
-          }
-        }
-      );
-
-      console.log("Replicate output:", JSON.stringify(output));
-
-      let generatedUrl = "";
-
-      if (Array.isArray(output) && output.length > 0) {
-        const first = output[0];
-        if (typeof first === "string") {
-          generatedUrl = first;
-        } else if (first && typeof first === "object" && "url" in first) {
-          generatedUrl = String((first as any).url);
-        } else {
-          generatedUrl = String(first);
-        }
-      } else if (typeof output === "string") {
-        generatedUrl = output;
-      } else if (output && typeof (output as any).url === "string") {
-        generatedUrl = (output as any).url;
-      } else if (output && typeof output === "object") {
-        console.log("Full output object:", JSON.stringify(output));
-        throw new Error(`Unknown output format: ${JSON.stringify(output)}`);
-      } else {
-        throw new Error(`Unknown output format: ${JSON.stringify(output)}`);
-      }
+      const generatedUrl = await runWithRetry(replicate, {
+        prompt,
+        image_input: [dataUri],
+      });
 
       return {
         success: true,
