@@ -1,7 +1,10 @@
-import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
-import { Link } from '@tanstack/react-router'
+import { HeadContent, Scripts, createRootRoute, Outlet } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
+import { ClerkProvider, SignedIn, SignedOut, useUser, useClerk } from '@clerk/clerk-react'
 import '../styles.css'
-
+ 
+const CLERK_PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY
+ 
 export const Route = createRootRoute({
   head: () => ({
     meta: [
@@ -20,7 +23,7 @@ export const Route = createRootRoute({
   }),
   shellComponent: RootDocument,
 })
-
+ 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
@@ -28,15 +31,29 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body>
-        <SiteNav />
-        {children}
+        <ClerkProvider publishableKey={CLERK_PUBLISHABLE_KEY}>
+          <SiteNav />
+          {children}
+        </ClerkProvider>
         <Scripts />
       </body>
     </html>
   )
 }
-
+ 
 function SiteNav() {
+  const { user, isLoaded } = useUser()
+  const { signOut } = useClerk()
+  const navigate = useNavigate()
+ 
+  const userType = user?.unsafeMetadata?.userType as string | undefined
+  const dashboardPath = userType === 'agent' ? '/agent-dashboard' : '/buyer-dashboard'
+ 
+  const handleSignOut = async () => {
+    await signOut()
+    navigate({ to: '/' })
+  }
+ 
   return (
     <header style={{
       background: '#1a1612',
@@ -60,12 +77,11 @@ function SiteNav() {
           Home<span style={{ color: '#b8965a', fontStyle: 'italic' }}>Vision</span>
         </span>
       </Link>
-
+ 
       <nav style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
         {[
           { to: '/tool' as const, label: 'Buyer Tool' },
           { to: '/embed-demo' as const, label: 'Embed Demo' },
-          { to: '/dashboard' as const, label: 'Dashboard' },
           { to: '/faq' as const, label: 'FAQ' },
         ].map(({ to, label }) => (
           <Link
@@ -84,24 +100,77 @@ function SiteNav() {
             {label}
           </Link>
         ))}
-        <Link
-          to="/dashboard"
-          style={{
-            fontSize: '12px',
-            fontWeight: 500,
-            color: '#b8965a',
-            border: '1px solid rgba(184,150,90,0.5)',
-            padding: '6px 16px',
-            borderRadius: '20px',
-            letterSpacing: '0.1em',
-            textTransform: 'uppercase',
-            textDecoration: 'none',
-            transition: 'all 0.2s',
-          }}
-        >
-          Agent Login
-        </Link>
+ 
+        {isLoaded && (
+          <>
+            <SignedOut>
+              <Link
+                to="/sign-in"
+                style={{
+                  color: 'rgba(245,240,232,0.55)',
+                  textDecoration: 'none',
+                  fontSize: '13px',
+                  fontWeight: 400,
+                  letterSpacing: '0.04em',
+                }}
+              >
+                Sign In
+              </Link>
+              <Link
+                to="/sign-up"
+                style={{
+                  fontSize: '12px',
+                  fontWeight: 500,
+                  color: '#b8965a',
+                  border: '1px solid rgba(184,150,90,0.5)',
+                  padding: '6px 16px',
+                  borderRadius: '20px',
+                  letterSpacing: '0.1em',
+                  textTransform: 'uppercase',
+                  textDecoration: 'none',
+                }}
+              >
+                Get Started
+              </Link>
+            </SignedOut>
+ 
+            <SignedIn>
+              <Link
+                to={dashboardPath as any}
+                style={{
+                  color: 'rgba(245,240,232,0.55)',
+                  textDecoration: 'none',
+                  fontSize: '13px',
+                  fontWeight: 400,
+                  letterSpacing: '0.04em',
+                }}
+                activeProps={{ style: { color: '#b8965a' } }}
+              >
+                Dashboard
+              </Link>
+              <button
+                onClick={handleSignOut}
+                style={{
+                  fontSize: '12px',
+                  fontWeight: 500,
+                  color: '#b8965a',
+                  border: '1px solid rgba(184,150,90,0.5)',
+                  padding: '6px 16px',
+                  borderRadius: '20px',
+                  letterSpacing: '0.1em',
+                  textTransform: 'uppercase',
+                  background: 'transparent',
+                  cursor: 'pointer',
+                  fontFamily: "'DM Sans', sans-serif",
+                }}
+              >
+                Sign Out
+              </button>
+            </SignedIn>
+          </>
+        )}
       </nav>
     </header>
   )
 }
+ 
