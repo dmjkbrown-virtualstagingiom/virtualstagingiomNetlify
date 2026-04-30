@@ -85,11 +85,17 @@ const ROOM_STYLE_PROMPTS: Record<string, Record<string, string>> = {
 };
 
 function getPrompt(roomId: string, style: string): string {
-  // Handle numbered rooms (bedroom2, bedroom3 etc) by mapping to base room type
   const baseRoomId = roomId.replace(/\d+$/, "");
   const roomPrompts = ROOM_STYLE_PROMPTS[baseRoomId] || ROOM_STYLE_PROMPTS[roomId];
-  if (roomPrompts && roomPrompts[style]) return roomPrompts[style];
-  return `Redesign this room in a ${style} interior design style. Professional real estate photograph, perfect lighting, wide angle.`;
+  const basePrompt = (roomPrompts && roomPrompts[style])
+    ? roomPrompts[style]
+    : `Redesign this room in a ${style} interior design style. Professional real estate photograph, perfect lighting, wide angle.`;
+
+  const prefix = "IMPORTANT: Perform a bold, dramatic, complete interior redesign of this room. Completely replace all furniture, finishes, colours, and decor with the new style. Do NOT make subtle changes — fully transform the interior. Keep ONLY the room architecture: the exact same walls, ceiling height, windows, doors, floor plan, and room dimensions must be preserved exactly. ";
+
+  const suffix = " The room structure, proportions, window positions, and door positions must remain identical to the original photograph. Apply the new style boldly and completely. Photorealistic, professional interior photography, wide angle, high detail.";
+
+  return prefix + basePrompt + suffix;
 }
 
 export const generateRoomImageFn = createServerFn({ method: "POST" })
