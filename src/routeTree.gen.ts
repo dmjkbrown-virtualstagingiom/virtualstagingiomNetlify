@@ -10,14 +10,28 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ToolRouteImport } from './routes/tool'
+import { Route as SignUpRouteImport } from './routes/sign-up'
+import { Route as SignInRouteImport } from './routes/sign-in'
 import { Route as FaqRouteImport } from './routes/faq'
 import { Route as EmbedDemoRouteImport } from './routes/embed-demo'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as BuyerDashboardRouteImport } from './routes/buyer-dashboard'
+import { Route as AgentDashboardRouteImport } from './routes/agent-dashboard'
 import { Route as IndexRouteImport } from './routes/index'
 
 const ToolRoute = ToolRouteImport.update({
   id: '/tool',
   path: '/tool',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SignUpRoute = SignUpRouteImport.update({
+  id: '/sign-up',
+  path: '/sign-up',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SignInRoute = SignInRouteImport.update({
+  id: '/sign-in',
+  path: '/sign-in',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FaqRoute = FaqRouteImport.update({
@@ -35,6 +49,16 @@ const DashboardRoute = DashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BuyerDashboardRoute = BuyerDashboardRouteImport.update({
+  id: '/buyer-dashboard',
+  path: '/buyer-dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AgentDashboardRoute = AgentDashboardRouteImport.update({
+  id: '/agent-dashboard',
+  path: '/agent-dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -43,39 +67,55 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/agent-dashboard': typeof AgentDashboardRoute
+  '/buyer-dashboard': typeof BuyerDashboardRoute
   '/dashboard': typeof DashboardRoute
   '/embed-demo': typeof EmbedDemoRoute
   '/faq': typeof FaqRoute
+  '/sign-in': typeof SignInRoute
+  '/sign-up': typeof SignUpRoute
   '/tool': typeof ToolRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/agent-dashboard': typeof AgentDashboardRoute
+  '/buyer-dashboard': typeof BuyerDashboardRoute
   '/dashboard': typeof DashboardRoute
   '/embed-demo': typeof EmbedDemoRoute
   '/faq': typeof FaqRoute
+  '/sign-in': typeof SignInRoute
+  '/sign-up': typeof SignUpRoute
   '/tool': typeof ToolRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/agent-dashboard': typeof AgentDashboardRoute
+  '/buyer-dashboard': typeof BuyerDashboardRoute
   '/dashboard': typeof DashboardRoute
   '/embed-demo': typeof EmbedDemoRoute
   '/faq': typeof FaqRoute
+  '/sign-in': typeof SignInRoute
+  '/sign-up': typeof SignUpRoute
   '/tool': typeof ToolRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/dashboard' | '/embed-demo' | '/faq' | '/tool'
+  fullPaths: '/' | '/agent-dashboard' | '/buyer-dashboard' | '/dashboard' | '/embed-demo' | '/faq' | '/sign-in' | '/sign-up' | '/tool'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/dashboard' | '/embed-demo' | '/faq' | '/tool'
-  id: '__root__' | '/' | '/dashboard' | '/embed-demo' | '/faq' | '/tool'
+  to: '/' | '/agent-dashboard' | '/buyer-dashboard' | '/dashboard' | '/embed-demo' | '/faq' | '/sign-in' | '/sign-up' | '/tool'
+  id: '__root__' | '/' | '/agent-dashboard' | '/buyer-dashboard' | '/dashboard' | '/embed-demo' | '/faq' | '/sign-in' | '/sign-up' | '/tool'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AgentDashboardRoute: typeof AgentDashboardRoute
+  BuyerDashboardRoute: typeof BuyerDashboardRoute
   DashboardRoute: typeof DashboardRoute
   EmbedDemoRoute: typeof EmbedDemoRoute
   FaqRoute: typeof FaqRoute
+  SignInRoute: typeof SignInRoute
+  SignUpRoute: typeof SignUpRoute
   ToolRoute: typeof ToolRoute
 }
 
@@ -86,6 +126,20 @@ declare module '@tanstack/react-router' {
       path: '/tool'
       fullPath: '/tool'
       preLoaderRoute: typeof ToolRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sign-up': {
+      id: '/sign-up'
+      path: '/sign-up'
+      fullPath: '/sign-up'
+      preLoaderRoute: typeof SignUpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sign-in': {
+      id: '/sign-in'
+      path: '/sign-in'
+      fullPath: '/sign-in'
+      preLoaderRoute: typeof SignInRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/faq': {
@@ -109,6 +163,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/buyer-dashboard': {
+      id: '/buyer-dashboard'
+      path: '/buyer-dashboard'
+      fullPath: '/buyer-dashboard'
+      preLoaderRoute: typeof BuyerDashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/agent-dashboard': {
+      id: '/agent-dashboard'
+      path: '/agent-dashboard'
+      fullPath: '/agent-dashboard'
+      preLoaderRoute: typeof AgentDashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -121,9 +189,13 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AgentDashboardRoute: AgentDashboardRoute,
+  BuyerDashboardRoute: BuyerDashboardRoute,
   DashboardRoute: DashboardRoute,
   EmbedDemoRoute: EmbedDemoRoute,
   FaqRoute: FaqRoute,
+  SignInRoute: SignInRoute,
+  SignUpRoute: SignUpRoute,
   ToolRoute: ToolRoute,
 }
 export const routeTree = rootRouteImport
