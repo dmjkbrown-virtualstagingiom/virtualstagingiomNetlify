@@ -24,7 +24,6 @@ const BASE_ROOM_TYPES = [
   { id: "bedroom", label: "Bedroom" },
   { id: "kidsroom", label: "Kids Room" },
   { id: "playroom", label: "Playroom" },
-  { id: "hallway", label: "Hallway" },
   { id: "bathroom", label: "Bathroom" },
 ];
 
