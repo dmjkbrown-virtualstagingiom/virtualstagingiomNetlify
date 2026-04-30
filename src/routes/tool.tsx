@@ -92,12 +92,12 @@ function BuyerTool() {
     Array.from(files).forEach((file) => {
       if (!file.type.startsWith("image/")) return;
 
-      // Compress image to max 1024px and convert to JPEG for smaller file size
+      // Compress image to max 512px and convert to JPEG for smaller file size
       const img = new Image();
       const objectUrl = URL.createObjectURL(file);
       img.onload = () => {
         const canvas = document.createElement("canvas");
-        const maxSize = 1024;
+        const maxSize = 512;
         let { width, height } = img;
         if (width > maxSize || height > maxSize) {
           if (width > height) {
@@ -133,7 +133,7 @@ function BuyerTool() {
             URL.revokeObjectURL(objectUrl);
           },
           "image/jpeg",
-          0.85
+          0.6
         );
       };
       img.src = objectUrl;
