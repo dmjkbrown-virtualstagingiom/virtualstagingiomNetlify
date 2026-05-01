@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useRef, useCallback } from "react";
+import React from 'react'
 import { generateRoomImageFn } from "../server/ai.functions";
 
 export const Route = createFileRoute("/tool")({
