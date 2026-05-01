@@ -1,11 +1,39 @@
 import { createAPIFileRoute } from '@tanstack/react-start/api'
 import Stripe from 'stripe'
-import { clerkClient } from '@clerk/express'
 
-// How many generations each plan grants
 const PLAN_ALLOWANCES: Record<string, number> = {
   payg: 15,
   monthly: 100,
+}
+
+async function getClerkUser(userId: string) {
+  const res = await fetch(`https://api.clerk.com/v1/users/${userId}`, {
+    headers: { Authorization: `Bearer ${process.env.CLERK_SECRET_KEY}` },
+  })
+  if (!res.ok) throw new Error(`Clerk user fetch failed: ${res.status}`)
+  return res.json()
+}
+
+async function updateClerkMetadata(userId: string, publicMetadata: Record<string, unknown>) {
+  const res = await fetch(`https://api.clerk.com/v1/users/${userId}/metadata`, {
+    method: 'PATCH',
+    headers: {
+      Authorization: `Bearer ${process.env.CLERK_SECRET_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ public_metadata: publicMetadata }),
+  })
+  if (!res.ok) throw new Error(`Clerk metadata update failed: ${res.status}`)
+  return res.json()
+}
+
+async function findUserByCustomerId(customerId: string) {
+  const res = await fetch(`https://api.clerk.com/v1/users?limit=100`, {
+    headers: { Authorization: `Bearer ${process.env.CLERK_SECRET_KEY}` },
+  })
+  if (!res.ok) return null
+  const data = await res.json()
+  return data.find((u: any) => u.public_metadata?.stripeCustomerId === customerId) ?? null
 }
 
 export const APIRoute = createAPIFileRoute('/api/stripe-webhook')({
@@ -34,80 +62,56 @@ export const APIRoute = createAPIFileRoute('/api/stripe-webhook')({
       const priceId = session.metadata?.priceId
 
       if (userId && priceId) {
-        const paygPriceId = process.env.STRIPE_PRICE_PAYG
-        const monthlyPriceId = process.env.STRIPE_PRICE_MONTHLY
-
-        const plan = priceId === monthlyPriceId ? 'monthly' : 'payg'
-        const planLabel = priceId === monthlyPriceId ? 'Monthly' : 'Pay As You Go'
+        const plan = priceId === process.env.STRIPE_PRICE_MONTHLY ? 'monthly' : 'payg'
+        const planLabel = plan === 'monthly' ? 'Monthly' : 'Pay As You Go'
         const allowance = PLAN_ALLOWANCES[plan]
 
-        // For Pay As You Go: add 15 to any existing balance (top-up behaviour)
-        // For Monthly: always reset to 100
         let generationsRemaining = allowance
         if (plan === 'payg') {
           try {
-            const existingUser = await clerkClient.users.getUser(userId)
-            const existing = (existingUser.publicMetadata?.generationsRemaining as number) ?? 0
+            const existingUser = await getClerkUser(userId)
+            const existing = (existingUser.public_metadata?.generationsRemaining as number) ?? 0
             generationsRemaining = existing + allowance
           } catch {
             generationsRemaining = allowance
           }
         }
 
-        await clerkClient.users.updateUserMetadata(userId, {
-          publicMetadata: {
-            plan,
-            planLabel,
-            planActivatedAt: new Date().toISOString(),
-            stripeSessionId: session.id,
-            stripeCustomerId: session.customer as string,
-            generationsRemaining,
-            generationsAllowance: allowance,
-          },
+        await updateClerkMetadata(userId, {
+          plan,
+          planLabel,
+          planActivatedAt: new Date().toISOString(),
+          stripeSessionId: session.id,
+          stripeCustomerId: session.customer as string,
+          generationsRemaining,
+          generationsAllowance: allowance,
         })
       }
     }
 
-    // Monthly subscription renewal — top up to 100 again
     if (event.type === 'invoice.payment_succeeded') {
       const invoice = event.data.object as Stripe.Invoice
-      const customerId = invoice.customer as string
-
-      // Only handle renewal invoices (not the first payment which is covered above)
       if (invoice.billing_reason === 'subscription_cycle') {
-        const users = await clerkClient.users.getUserList({ limit: 100 })
-        const user = users.data.find(
-          (u) => u.publicMetadata?.stripeCustomerId === customerId
-        )
-        if (user && user.publicMetadata?.plan === 'monthly') {
-          await clerkClient.users.updateUserMetadata(user.id, {
-            publicMetadata: {
-              ...user.publicMetadata,
-              generationsRemaining: 100,
-              planActivatedAt: new Date().toISOString(),
-            },
+        const user = await findUserByCustomerId(invoice.customer as string)
+        if (user && user.public_metadata?.plan === 'monthly') {
+          await updateClerkMetadata(user.id, {
+            ...user.public_metadata,
+            generationsRemaining: 100,
+            planActivatedAt: new Date().toISOString(),
           })
         }
       }
     }
 
-    // Subscription cancelled — remove plan
     if (event.type === 'customer.subscription.deleted') {
       const subscription = event.data.object as Stripe.Subscription
-      const customerId = subscription.customer as string
-
-      const users = await clerkClient.users.getUserList({ limit: 100 })
-      const user = users.data.find(
-        (u) => u.publicMetadata?.stripeCustomerId === customerId
-      )
+      const user = await findUserByCustomerId(subscription.customer as string)
       if (user) {
-        await clerkClient.users.updateUserMetadata(user.id, {
-          publicMetadata: {
-            plan: 'free',
-            planLabel: 'Free Trial',
-            planActivatedAt: null,
-            generationsRemaining: 0,
-          },
+        await updateClerkMetadata(user.id, {
+          plan: 'free',
+          planLabel: 'Free Trial',
+          planActivatedAt: null,
+          generationsRemaining: 0,
         })
       }
     }
