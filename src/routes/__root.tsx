@@ -34,8 +34,8 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <ClerkProvider publishableKey={CLERK_PUBLISHABLE_KEY}>
           <SiteNav />
           {children}
+          <Scripts />
         </ClerkProvider>
-        <Scripts />
       </body>
     </html>
   )
