@@ -262,7 +262,7 @@ function EmbedDemo() {
                   fontFamily: "'Cormorant Garamond', serif",
                   fontSize: '22px', fontWeight: 300, color: '#f5f0e8',
                 }}>
-                  Home<span style={{ color: '#b8965a', fontStyle: 'italic' }}>Vision</span>
+                  Virtual Staging <span style={{ color: '#b8965a', fontStyle: 'italic' }}>IOM</span>
                 </span>
                 <button onClick={closeWidget} style={{
                   background: 'transparent', border: 'none',
