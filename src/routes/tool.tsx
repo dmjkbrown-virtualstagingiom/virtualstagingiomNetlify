@@ -17,7 +17,7 @@ const S = {
   white: "#ffffff",
 } as const;
 
-const BASE_ROOM_TYPES = [
+const ROOM_TYPES = [
   { id: "kitchen", label: "Kitchen" },
   { id: "livingroom", label: "Living Room" },
   { id: "diningroom", label: "Dining Room" },
@@ -25,6 +25,8 @@ const BASE_ROOM_TYPES = [
   { id: "kidsroom", label: "Kids Room" },
   { id: "playroom", label: "Playroom" },
   { id: "bathroom", label: "Bathroom" },
+  { id: "hallway", label: "Hallway" },
+  { id: "office", label: "Home Office" },
 ];
 
 const STYLES = [
@@ -38,132 +40,106 @@ const STYLES = [
   { id: "maximalist", label: "Maximalist", desc: "Bold colour, rich textures, layered patterns", gradient: "linear-gradient(135deg, #4a2d6b 0%, #7a4a95 50%, #d4a03a 100%)" },
 ];
 
-const MAX_ROOMS = 5;
+const MAX_PHOTOS = 5;
 
-type Stage = "rooms" | "upload" | "style" | "generating" | "results";
+type Stage = "upload" | "label" | "style" | "generating" | "results";
 
-interface SelectedRoom {
-  instanceId: string; // e.g. "bedroom-1", "bedroom-2"
-  baseId: string;     // e.g. "bedroom"
-  label: string;      // e.g. "Bedroom 1", "Bedroom 2"
-}
-
-interface RoomImage {
-  instanceId: string;
-  baseId: string;
-  label: string;
+interface PhotoEntry {
+  id: string;
+  file: File;
   url: string;
+  roomTypeId: string | null;
   afterUrl?: string;
-  file?: File;
 }
 
 function BuyerTool() {
-  const [stage, setStage] = useState<Stage>("rooms");
-  const [selectedRooms, setSelectedRooms] = useState<SelectedRoom[]>([]);
-  const [roomImages, setRoomImages] = useState<Record<string, RoomImage>>({});
+  const [stage, setStage] = useState<Stage>("upload");
+  const [photos, setPhotos] = useState<PhotoEntry[]>([]);
   const [selectedStyle, setSelectedStyle] = useState<string | null>(null);
   const [generatedCount, setGeneratedCount] = useState(0);
   const [showBefore, setShowBefore] = useState<Record<string, boolean>>({});
-  const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [dragging, setDragging] = useState(false);
 
-  const getRoomCount = (baseId: string) => selectedRooms.filter((r) => r.baseId === baseId).length;
+  const processFiles = useCallback((files: FileList | File[]) => {
+    const arr = Array.from(files).filter(f => f.type.startsWith("image/"));
+    const remaining = MAX_PHOTOS - photos.length;
+    const toProcess = arr.slice(0, remaining);
 
-  const addRoom = (baseId: string, baseLabel: string) => {
-    if (selectedRooms.length >= MAX_ROOMS) return;
-    const count = getRoomCount(baseId);
-    const instanceId = count === 0 ? baseId : `${baseId}-${count + 1}`;
-    const label = count === 0 ? baseLabel : `${baseLabel} ${count + 1}`;
-    setSelectedRooms((prev) => [...prev, { instanceId, baseId, label }]);
-  };
-
-  const removeRoom = (instanceId: string) => {
-    setSelectedRooms((prev) => {
-      const filtered = prev.filter((r) => r.instanceId !== instanceId);
-      // Renumber remaining rooms of same base type
-      const baseCounts: Record<string, number> = {};
-      return filtered.map((r) => {
-        baseCounts[r.baseId] = (baseCounts[r.baseId] || 0) + 1;
-        const count = baseCounts[r.baseId];
-        const baseRoom = BASE_ROOM_TYPES.find((b) => b.id === r.baseId)!;
-        const newInstanceId = count === 1 ? r.baseId : `${r.baseId}-${count}`;
-        const newLabel = count === 1 ? baseRoom.label : `${baseRoom.label} ${count}`;
-        return { ...r, instanceId: newInstanceId, label: newLabel };
-      });
+    toProcess.forEach(file => {
+      const img = new Image();
+      const objectUrl = URL.createObjectURL(file);
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const maxSize = 512;
+        let { width, height } = img;
+        if (width > maxSize || height > maxSize) {
+          if (width > height) { height = Math.round((height * maxSize) / width); width = maxSize; }
+          else { width = Math.round((width * maxSize) / height); height = maxSize; }
+        }
+        canvas.width = width; canvas.height = height;
+        const ctx = canvas.getContext("2d")!;
+        ctx.drawImage(img, 0, 0, width, height);
+        canvas.toBlob(blob => {
+          if (!blob) return;
+          const compressedFile = new File([blob], file.name, { type: "image/jpeg" });
+          const url = URL.createObjectURL(blob);
+          const id = `photo-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+          setPhotos(prev => prev.length < MAX_PHOTOS ? [...prev, { id, file: compressedFile, url, roomTypeId: null }] : prev);
+          URL.revokeObjectURL(objectUrl);
+        }, "image/jpeg", 0.6);
+      };
+      img.src = objectUrl;
     });
-    setRoomImages((prev) => { const next = { ...prev }; delete next[instanceId]; return next; });
+  }, [photos.length]);
+
+  const removePhoto = (id: string) => {
+    setPhotos(prev => prev.filter(p => p.id !== id));
   };
 
-  const handleFileForRoom = useCallback((instanceId: string, baseId: string, label: string, file: File) => {
-    if (!file.type.startsWith("image/")) return;
-    const img = new Image();
-    const objectUrl = URL.createObjectURL(file);
-    img.onload = () => {
-      const canvas = document.createElement("canvas");
-      const maxSize = 512;
-      let { width, height } = img;
-      if (width > maxSize || height > maxSize) {
-        if (width > height) { height = Math.round((height * maxSize) / width); width = maxSize; }
-        else { width = Math.round((width * maxSize) / height); height = maxSize; }
-      }
-      canvas.width = width; canvas.height = height;
-      const ctx = canvas.getContext("2d")!;
-      ctx.drawImage(img, 0, 0, width, height);
-      canvas.toBlob((blob) => {
-        if (!blob) return;
-        const compressedFile = new File([blob], `${instanceId}.jpg`, { type: "image/jpeg" });
-        const url = URL.createObjectURL(blob);
-        setRoomImages((prev) => ({ ...prev, [instanceId]: { instanceId, baseId, label, url, file: compressedFile } }));
-        URL.revokeObjectURL(objectUrl);
-      }, "image/jpeg", 0.6);
-    };
-    img.src = objectUrl;
-  }, []);
+  const setRoomType = (id: string, roomTypeId: string) => {
+    setPhotos(prev => prev.map(p => p.id === id ? { ...p, roomTypeId } : p));
+  };
 
-  const uploadedCount = selectedRooms.filter((r) => roomImages[r.instanceId]).length;
-  const allUploaded = selectedRooms.length > 0 && uploadedCount === selectedRooms.length;
+  const allLabelled = photos.length > 0 && photos.every(p => p.roomTypeId !== null);
 
   const startGenerating = async () => {
-    if (!selectedStyle || selectedRooms.length === 0) return;
+    if (!selectedStyle || photos.length === 0) return;
     setStage("generating");
     setGeneratedCount(0);
-    const updatedImages = { ...roomImages };
+    const updated = [...photos];
 
-    for (let i = 0; i < selectedRooms.length; i++) {
-      const room = selectedRooms[i];
-      const roomImage = roomImages[room.instanceId];
-      if (!roomImage?.file) { setGeneratedCount((prev) => prev + 1); continue; }
-
+    for (let i = 0; i < updated.length; i++) {
+      const photo = updated[i];
       try {
         const imageDataUri = await new Promise<string>((resolve, reject) => {
           const reader = new FileReader();
-          reader.onload = (e) => resolve(e.target?.result as string);
+          reader.onload = e => resolve(e.target?.result as string);
           reader.onerror = reject;
-          reader.readAsDataURL(roomImage.file!);
+          reader.readAsDataURL(photo.file);
         });
-
-        const result = await generateRoomImageFn({ data: { imageDataUri, style: selectedStyle, roomId: room.baseId } });
-        updatedImages[room.instanceId] = { ...updatedImages[room.instanceId], afterUrl: result.generatedImageUrl };
-      } catch (error) {
-        console.error("Generation failed for", room.instanceId, error);
+        const result = await generateRoomImageFn({ data: { imageDataUri, style: selectedStyle, roomId: photo.roomTypeId! } });
+        updated[i] = { ...updated[i], afterUrl: result.generatedImageUrl };
+      } catch (err) {
+        console.error("Generation failed for", photo.id, err);
       }
-
-      setGeneratedCount((prev) => prev + 1);
+      setGeneratedCount(i + 1);
     }
 
-    setRoomImages(updatedImages);
+    setPhotos(updated);
     setTimeout(() => setStage("results"), 400);
   };
 
   const reset = () => {
-    setStage("rooms"); setSelectedRooms([]); setRoomImages({});
-    setSelectedStyle(null); setGeneratedCount(0); setShowBefore({});
+    setStage("upload"); setPhotos([]); setSelectedStyle(null);
+    setGeneratedCount(0); setShowBefore({});
   };
 
-  const styleName = STYLES.find((s) => s.id === selectedStyle)?.label || "";
+  const styleName = STYLES.find(s => s.id === selectedStyle)?.label || "";
+  const stageIndex = { upload: 0, label: 1, style: 2, generating: 2, results: 3 }[stage];
 
   return (
     <div style={{ minHeight: "calc(100vh - 72px)", background: S.surface }}>
-      {/* Hero */}
       <div style={{ background: S.ink, padding: "56px 48px 64px", color: S.cream, position: "relative", overflow: "hidden" }}>
         <div style={{ position: "absolute", bottom: "-60px", right: "-40px", width: "360px", height: "360px", background: "radial-gradient(circle, rgba(184,150,90,0.12) 0%, transparent 70%)", pointerEvents: "none" }} />
         <p style={{ fontSize: "11px", letterSpacing: "0.18em", textTransform: "uppercase", color: S.gold, fontWeight: 500, marginBottom: "16px" }}>Buyer Tool</p>
@@ -171,15 +147,15 @@ function BuyerTool() {
           Reimagine this home <em style={{ fontStyle: "italic", color: S.goldLight }}>in your style</em>
         </h1>
         <p style={{ color: S.muted, fontSize: "15px", maxWidth: "440px", lineHeight: 1.7, fontWeight: 300 }}>
-          Select up to 5 rooms, upload your photos, choose a style, and watch AI transform every room.
+          Upload up to {MAX_PHOTOS} room photos, label each room, choose a style, and watch AI transform every room.
         </p>
         <div style={{ display: "flex", gap: "0", marginTop: "40px", maxWidth: "600px" }}>
-          {(["rooms", "upload", "style", "results"] as const).map((s, i) => (
-            <div key={s} style={{ flex: 1, height: "3px", background: (stage === "results" || (stage === "style" && i < 3) || (stage === "upload" && i < 2) || (stage === "rooms" && i < 1) || (stage === "generating" && i < 3)) ? S.gold : "rgba(255,255,255,0.15)", marginRight: i < 3 ? "4px" : 0, borderRadius: "2px", transition: "background 0.4s ease" }} />
+          {(["upload", "label", "style", "results"] as const).map((s, i) => (
+            <div key={s} style={{ flex: 1, height: "3px", background: i <= stageIndex ? S.gold : "rgba(255,255,255,0.15)", marginRight: i < 3 ? "4px" : 0, borderRadius: "2px", transition: "background 0.4s ease" }} />
           ))}
         </div>
         <div style={{ display: "flex", marginTop: "8px", maxWidth: "600px", justifyContent: "space-between" }}>
-          {["Select rooms", "Upload photos", "Choose style", "View results"].map((label) => (
+          {["Upload photos", "Label rooms", "Choose style", "View results"].map(label => (
             <span key={label} style={{ fontSize: "11px", color: S.muted, letterSpacing: "0.06em" }}>{label}</span>
           ))}
         </div>
@@ -187,99 +163,126 @@ function BuyerTool() {
 
       <main style={{ maxWidth: "960px", margin: "0 auto", padding: "56px 48px" }}>
 
-        {/* Stage: Room Selection */}
-        {stage === "rooms" && (
+        {stage === "upload" && (
           <>
-            <SectionLabel>Select up to {MAX_ROOMS} rooms</SectionLabel>
-            <p style={{ fontSize: "13px", color: S.muted, marginBottom: "8px" }}>
-              {selectedRooms.length === 0 ? "Tap a room type to add it. You can add multiple bedrooms or bathrooms." : `${selectedRooms.length} of ${MAX_ROOMS} rooms selected.`}
+            <SectionLabel>Upload up to {MAX_PHOTOS} room photos</SectionLabel>
+            <p style={{ fontSize: "13px", color: S.muted, marginBottom: "32px" }}>
+              {photos.length === 0
+                ? "Select up to 5 photos at once, or drag and drop them below."
+                : `${photos.length} of ${MAX_PHOTOS} photos added. ${photos.length < MAX_PHOTOS ? "You can add more." : "Maximum reached."}`}
             </p>
-            {selectedRooms.length > 0 && (
-              <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginBottom: "24px" }}>
-                {selectedRooms.map((room) => (
-                  <div key={room.instanceId} style={{ display: "flex", alignItems: "center", gap: "6px", background: S.gold, color: S.white, padding: "6px 12px", borderRadius: "2px", fontSize: "12px", fontWeight: 500 }}>
-                    {room.label}
-                    <button onClick={() => removeRoom(room.instanceId)} style={{ background: "transparent", border: "none", color: S.white, cursor: "pointer", fontSize: "14px", lineHeight: 1, padding: "0 0 0 4px" }}>×</button>
+
+            {photos.length < MAX_PHOTOS && (
+              <div
+                onClick={() => fileInputRef.current?.click()}
+                onDragOver={e => { e.preventDefault(); setDragging(true); }}
+                onDragLeave={() => setDragging(false)}
+                onDrop={e => { e.preventDefault(); setDragging(false); processFiles(e.dataTransfer.files); }}
+                style={{ border: `2px dashed ${dragging ? S.gold : S.warm}`, borderRadius: "4px", padding: "48px 32px", textAlign: "center", cursor: "pointer", background: dragging ? "#fdf5e8" : S.white, transition: "all 0.2s", marginBottom: "32px" }}
+              >
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  style={{ display: "none" }}
+                  onChange={e => { if (e.target.files) processFiles(e.target.files); e.target.value = ""; }}
+                />
+                <UploadIcon color={S.gold} />
+                <p style={{ fontSize: "15px", color: S.ink, marginTop: "16px", fontWeight: 500 }}>Click to select photos</p>
+                <p style={{ fontSize: "13px", color: S.muted, marginTop: "6px" }}>or drag and drop — up to {MAX_PHOTOS - photos.length} more photo{MAX_PHOTOS - photos.length !== 1 ? "s" : ""}</p>
+              </div>
+            )}
+
+            {photos.length > 0 && (
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: "16px", marginBottom: "48px" }}>
+                {photos.map(photo => (
+                  <div key={photo.id} style={{ position: "relative", borderRadius: "2px", overflow: "hidden", boxShadow: "0 2px 12px rgba(26,22,18,0.10)" }}>
+                    <img src={photo.url} alt="Room" style={{ width: "100%", aspectRatio: "4/3", objectFit: "cover", display: "block" }} />
+                    <button
+                      onClick={() => removePhoto(photo.id)}
+                      style={{ position: "absolute", top: "6px", right: "6px", width: "24px", height: "24px", background: "rgba(26,22,18,0.7)", border: "none", borderRadius: "50%", color: S.cream, cursor: "pointer", fontSize: "14px", lineHeight: "1", display: "flex", alignItems: "center", justifyContent: "center" }}
+                    >x</button>
                   </div>
                 ))}
               </div>
             )}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: "12px", marginBottom: "48px" }}>
-              {BASE_ROOM_TYPES.map((room) => {
-                const count = getRoomCount(room.id);
-                const isDisabled = selectedRooms.length >= MAX_ROOMS;
-                return (
-                  <div key={room.id} onClick={() => !isDisabled && addRoom(room.id, room.label)} style={{ padding: "20px 16px", background: count > 0 ? "#fdf5e8" : S.white, borderRadius: "2px", border: `2px solid ${count > 0 ? S.gold : S.warm}`, cursor: isDisabled ? "not-allowed" : "pointer", opacity: isDisabled && count === 0 ? 0.4 : 1, transition: "all 0.2s", textAlign: "center", boxShadow: "0 2px 12px rgba(26,22,18,0.06)" }}>
-                    <div style={{ fontSize: "14px", fontWeight: 500, color: count > 0 ? S.gold : S.ink }}>{room.label}</div>
-                    {count > 0 && <div style={{ fontSize: "11px", color: S.gold, marginTop: "4px" }}>×{count} selected — tap to add more</div>}
-                    {count === 0 && <div style={{ fontSize: "11px", color: S.muted, marginTop: "4px" }}>Tap to add</div>}
-                  </div>
-                );
-              })}
-            </div>
+
             <div style={{ display: "flex", justifyContent: "flex-end" }}>
-              <button onClick={() => setStage("upload")} disabled={selectedRooms.length === 0} style={{ background: selectedRooms.length > 0 ? S.gold : S.warm, color: S.white, padding: "14px 40px", borderRadius: "2px", border: "none", fontSize: "13px", fontWeight: 500, letterSpacing: "0.1em", textTransform: "uppercase", cursor: selectedRooms.length > 0 ? "pointer" : "not-allowed", fontFamily: "'DM Sans', sans-serif" }}>
-                Upload photos →
+              <button
+                onClick={() => setStage("label")}
+                disabled={photos.length === 0}
+                style={{ background: photos.length > 0 ? S.gold : S.warm, color: S.white, padding: "14px 40px", borderRadius: "2px", border: "none", fontSize: "13px", fontWeight: 500, letterSpacing: "0.1em", textTransform: "uppercase", cursor: photos.length > 0 ? "pointer" : "not-allowed", fontFamily: "'DM Sans', sans-serif" }}
+              >
+                Label rooms
               </button>
             </div>
           </>
         )}
 
-        {/* Stage: Upload */}
-        {stage === "upload" && (
+        {stage === "label" && (
           <>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
-              <SectionLabel>Upload your room photos</SectionLabel>
-              <button onClick={() => setStage("rooms")} style={{ background: "transparent", border: "none", color: S.muted, cursor: "pointer", fontSize: "13px", fontFamily: "'DM Sans', sans-serif" }}>← Back</button>
+              <SectionLabel>What room is each photo?</SectionLabel>
+              <button onClick={() => setStage("upload")} style={{ background: "transparent", border: "none", color: S.muted, cursor: "pointer", fontSize: "13px", fontFamily: "'DM Sans', sans-serif" }}>Back</button>
             </div>
-            <p style={{ fontSize: "13px", color: S.muted, marginBottom: "32px" }}>Upload a photo for each room. {uploadedCount} of {selectedRooms.length} uploaded.</p>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: "20px", marginBottom: "48px" }}>
-              {selectedRooms.map((room) => {
-                const uploaded = roomImages[room.instanceId];
-                return (
-                  <div key={room.instanceId}>
-                    <p style={{ fontSize: "12px", fontWeight: 500, color: S.ink, marginBottom: "8px", letterSpacing: "0.06em", textTransform: "uppercase" }}>{room.label}</p>
-                    <div
-                      onClick={() => fileInputRefs.current[room.instanceId]?.click()}
-                      style={{ border: `2px dashed ${uploaded ? S.gold : S.warm}`, borderRadius: "2px", aspectRatio: "4/3", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", overflow: "hidden", position: "relative", background: uploaded ? "transparent" : S.white, transition: "border-color 0.2s" }}
-                      onDragOver={(e) => e.preventDefault()}
-                      onDrop={(e) => { e.preventDefault(); const file = e.dataTransfer.files[0]; if (file) handleFileForRoom(room.instanceId, room.baseId, room.label, file); }}
-                    >
-                      <input ref={(el) => { fileInputRefs.current[room.instanceId] = el; }} type="file" accept="image/*" style={{ display: "none" }} onChange={(e) => { const file = e.target.files?.[0]; if (file) handleFileForRoom(room.instanceId, room.baseId, room.label, file); }} />
-                      {uploaded ? (
-                        <>
-                          <img src={uploaded.url} alt={room.label} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-                          <div style={{ position: "absolute", top: "8px", right: "8px", width: "28px", height: "28px", background: S.gold, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}><CheckIcon /></div>
-                        </>
-                      ) : (
-                        <div style={{ textAlign: "center", padding: "16px" }}>
-                          <UploadIcon color={S.gold} />
-                          <p style={{ fontSize: "12px", color: S.muted, marginTop: "8px" }}>Click or drag to upload</p>
-                        </div>
-                      )}
+            <p style={{ fontSize: "13px", color: S.muted, marginBottom: "32px" }}>
+              Select the room type for each photo. {photos.filter(p => p.roomTypeId).length} of {photos.length} labelled.
+            </p>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: "24px", marginBottom: "48px" }}>
+              {photos.map((photo, idx) => (
+                <div key={photo.id} style={{ background: S.white, borderRadius: "2px", overflow: "hidden", boxShadow: "0 2px 12px rgba(26,22,18,0.08)" }}>
+                  <div style={{ position: "relative" }}>
+                    <img src={photo.url} alt={`Photo ${idx + 1}`} style={{ width: "100%", aspectRatio: "4/3", objectFit: "cover", display: "block" }} />
+                    <div style={{ position: "absolute", top: "8px", left: "8px", background: "rgba(26,22,18,0.65)", color: S.cream, fontSize: "11px", padding: "3px 8px", borderRadius: "2px" }}>Photo {idx + 1}</div>
+                    {photo.roomTypeId && (
+                      <div style={{ position: "absolute", top: "8px", right: "8px", width: "26px", height: "26px", background: S.gold, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}><CheckIcon /></div>
+                    )}
+                  </div>
+                  <div style={{ padding: "14px 16px" }}>
+                    <p style={{ fontSize: "11px", color: S.muted, marginBottom: "10px", letterSpacing: "0.06em", textTransform: "uppercase" }}>Room type</p>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+                      {ROOM_TYPES.map(rt => (
+                        <button
+                          key={rt.id}
+                          onClick={() => setRoomType(photo.id, rt.id)}
+                          style={{
+                            padding: "5px 10px", borderRadius: "2px", fontSize: "11px", fontWeight: 500,
+                            border: `1.5px solid ${photo.roomTypeId === rt.id ? S.gold : S.warm}`,
+                            background: photo.roomTypeId === rt.id ? S.gold : "transparent",
+                            color: photo.roomTypeId === rt.id ? S.white : S.ink,
+                            cursor: "pointer", fontFamily: "'DM Sans', sans-serif", transition: "all 0.15s"
+                          }}
+                        >
+                          {rt.label}
+                        </button>
+                      ))}
                     </div>
                   </div>
-                );
-              })}
+                </div>
+              ))}
             </div>
             <div style={{ display: "flex", justifyContent: "flex-end" }}>
-              <button onClick={() => setStage("style")} disabled={!allUploaded} style={{ background: allUploaded ? S.gold : S.warm, color: S.white, padding: "14px 40px", borderRadius: "2px", border: "none", fontSize: "13px", fontWeight: 500, letterSpacing: "0.1em", textTransform: "uppercase", cursor: allUploaded ? "pointer" : "not-allowed", fontFamily: "'DM Sans', sans-serif" }}>
-                Choose a style →
+              <button
+                onClick={() => setStage("style")}
+                disabled={!allLabelled}
+                style={{ background: allLabelled ? S.gold : S.warm, color: S.white, padding: "14px 40px", borderRadius: "2px", border: "none", fontSize: "13px", fontWeight: 500, letterSpacing: "0.1em", textTransform: "uppercase", cursor: allLabelled ? "pointer" : "not-allowed", fontFamily: "'DM Sans', sans-serif" }}
+              >
+                Choose a style
               </button>
             </div>
           </>
         )}
 
-        {/* Stage: Style picker */}
         {stage === "style" && (
           <>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
               <SectionLabel>Choose your interior style</SectionLabel>
-              <button onClick={() => setStage("upload")} style={{ background: "transparent", border: "none", color: S.muted, cursor: "pointer", fontSize: "13px", fontFamily: "'DM Sans', sans-serif" }}>← Back</button>
+              <button onClick={() => setStage("label")} style={{ background: "transparent", border: "none", color: S.muted, cursor: "pointer", fontSize: "13px", fontFamily: "'DM Sans', sans-serif" }}>Back</button>
             </div>
-            <p style={{ fontSize: "13px", color: S.muted, marginBottom: "32px" }}>AI will reimagine all {selectedRooms.length} rooms in your chosen style.</p>
+            <p style={{ fontSize: "13px", color: S.muted, marginBottom: "32px" }}>AI will reimagine all {photos.length} room{photos.length !== 1 ? "s" : ""} in your chosen style.</p>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "16px", marginBottom: "48px" }}>
-              {STYLES.map((style) => (
+              {STYLES.map(style => (
                 <div key={style.id} onClick={() => setSelectedStyle(style.id)} style={{ cursor: "pointer", borderRadius: "2px", overflow: "hidden", border: `3px solid ${selectedStyle === style.id ? S.gold : "transparent"}`, transition: "all 0.2s ease", background: S.white, boxShadow: "0 4px 24px rgba(26,22,18,0.08)", transform: selectedStyle === style.id ? "translateY(-2px)" : "none" }}>
                   <div style={{ height: "100px", background: style.gradient, position: "relative" }}>
                     {selectedStyle === style.id && <div style={{ position: "absolute", top: "8px", right: "8px", width: "24px", height: "24px", background: S.gold, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}><CheckIcon /></div>}
@@ -293,29 +296,27 @@ function BuyerTool() {
             </div>
             <div style={{ display: "flex", justifyContent: "flex-end" }}>
               <button onClick={startGenerating} disabled={!selectedStyle} style={{ background: selectedStyle ? S.gold : S.warm, color: S.white, padding: "14px 48px", borderRadius: "2px", border: "none", fontSize: "13px", fontWeight: 500, letterSpacing: "0.1em", textTransform: "uppercase", cursor: selectedStyle ? "pointer" : "not-allowed", fontFamily: "'DM Sans', sans-serif" }}>
-                Reimagine {selectedRooms.length} room{selectedRooms.length !== 1 ? "s" : ""} →
+                Reimagine {photos.length} room{photos.length !== 1 ? "s" : ""}
               </button>
             </div>
           </>
         )}
 
-        {/* Stage: Generating */}
         {stage === "generating" && (
           <div style={{ textAlign: "center", padding: "80px 0" }}>
             <div style={{ width: "72px", height: "72px", margin: "0 auto 24px", border: `2px solid ${S.warm}`, borderTop: `2px solid ${S.gold}`, borderRadius: "50%", animation: "spin 1.2s linear infinite" }} />
             <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
             <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "32px", fontWeight: 300, marginBottom: "12px" }}>Reimagining your rooms<span style={{ color: S.gold }}>...</span></h2>
             <p style={{ color: S.muted, fontSize: "14px", marginBottom: "40px" }}>
-              Transforming {generatedCount} of {selectedRooms.length} rooms in <span style={{ color: S.ink, fontWeight: 500 }}>{styleName}</span> style
+              Transforming {generatedCount} of {photos.length} rooms in <span style={{ color: S.ink, fontWeight: 500 }}>{styleName}</span> style
             </p>
             <div style={{ maxWidth: "400px", margin: "0 auto", height: "4px", background: S.warm, borderRadius: "2px", overflow: "hidden" }}>
-              <div style={{ height: "100%", background: S.gold, borderRadius: "2px", width: `${(generatedCount / selectedRooms.length) * 100}%`, transition: "width 0.6s ease" }} />
+              <div style={{ height: "100%", background: S.gold, borderRadius: "2px", width: `${(generatedCount / photos.length) * 100}%`, transition: "width 0.6s ease" }} />
             </div>
-            <p style={{ fontSize: "11px", color: S.muted, marginTop: "12px" }}>{generatedCount} / {selectedRooms.length} complete</p>
+            <p style={{ fontSize: "11px", color: S.muted, marginTop: "12px" }}>{generatedCount} / {photos.length} complete</p>
           </div>
         )}
 
-        {/* Stage: Results */}
         {stage === "results" && (
           <>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "32px" }}>
@@ -326,16 +327,16 @@ function BuyerTool() {
               <button onClick={reset} style={{ background: "transparent", border: `1px solid ${S.warm}`, color: S.ink, padding: "8px 20px", borderRadius: "2px", fontSize: "12px", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", letterSpacing: "0.06em" }}>Start over</button>
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "20px" }}>
-              {selectedRooms.map((room) => {
-                const roomImg = roomImages[room.instanceId];
-                const isBefore = showBefore[room.instanceId];
+              {photos.map(photo => {
+                const roomLabel = ROOM_TYPES.find(r => r.id === photo.roomTypeId)?.label || "Room";
+                const isBefore = showBefore[photo.id];
                 return (
-                  <div key={room.instanceId} style={{ background: S.white, borderRadius: "2px", overflow: "hidden", boxShadow: "0 4px 24px rgba(26,22,18,0.08)" }}>
+                  <div key={photo.id} style={{ background: S.white, borderRadius: "2px", overflow: "hidden", boxShadow: "0 4px 24px rgba(26,22,18,0.08)" }}>
                     <div style={{ position: "relative", aspectRatio: "4/3" }}>
                       {isBefore ? (
-                        <img src={roomImg.url} alt={room.label} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-                      ) : roomImg.afterUrl ? (
-                        <img src={roomImg.afterUrl} alt={`${room.label} after`} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                        <img src={photo.url} alt={roomLabel} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                      ) : photo.afterUrl ? (
+                        <img src={photo.afterUrl} alt={`${roomLabel} after`} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
                       ) : (
                         <div style={{ width: "100%", height: "100%", background: S.warm, display: "flex", alignItems: "center", justifyContent: "center" }}>
                           <span style={{ color: S.muted, fontSize: "13px" }}>Generation failed</span>
@@ -352,10 +353,10 @@ function BuyerTool() {
                     </div>
                     <div style={{ padding: "14px 16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                       <div>
-                        <span style={{ fontSize: "13px", fontWeight: 500, color: S.ink, display: "block" }}>{room.label}</span>
+                        <span style={{ fontSize: "13px", fontWeight: 500, color: S.ink, display: "block" }}>{roomLabel}</span>
                         <span style={{ fontSize: "11px", color: S.muted }}>{styleName} Style</span>
                       </div>
-                      <button onClick={() => setShowBefore((prev) => ({ ...prev, [room.instanceId]: !prev[room.instanceId] }))} style={{ background: "transparent", border: `1px solid ${S.warm}`, color: S.muted, padding: "5px 12px", borderRadius: "2px", fontSize: "11px", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", letterSpacing: "0.06em" }}>
+                      <button onClick={() => setShowBefore(prev => ({ ...prev, [photo.id]: !prev[photo.id] }))} style={{ background: "transparent", border: `1px solid ${S.warm}`, color: S.muted, padding: "5px 12px", borderRadius: "2px", fontSize: "11px", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", letterSpacing: "0.06em" }}>
                         {isBefore ? "Show after" : "Show before"}
                       </button>
                     </div>
@@ -366,7 +367,7 @@ function BuyerTool() {
             <div style={{ marginTop: "48px", padding: "32px", background: S.ink, borderRadius: "2px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div>
                 <p style={{ color: S.cream, fontSize: "15px", fontWeight: 400, marginBottom: "4px" }}>Love what you see?</p>
-                <p style={{ color: S.muted, fontSize: "13px" }}>In production, buyers see this automatically on your listing page — no upload needed.</p>
+                <p style={{ color: S.muted, fontSize: "13px" }}>In production, buyers see this automatically on your listing page - no upload needed.</p>
               </div>
               <button onClick={reset} style={{ background: "transparent", border: "1px solid rgba(184,150,90,0.4)", color: S.cream, padding: "10px 24px", borderRadius: "2px", fontSize: "12px", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", letterSpacing: "0.08em", textTransform: "uppercase" }}>
                 Try another style
@@ -390,7 +391,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 
 function UploadIcon({ color }: { color: string }) {
   return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
       <polyline points="17 8 12 3 7 8" />
       <line x1="12" y1="3" x2="12" y2="15" />
@@ -405,4 +406,3 @@ function CheckIcon() {
     </svg>
   );
 }
-
