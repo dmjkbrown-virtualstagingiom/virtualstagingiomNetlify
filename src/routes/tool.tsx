@@ -1,9 +1,10 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, useRef, useCallback } from "react";
 import React from "react";
 import { useUser } from "@clerk/clerk-react";
 import { generateRoomImageFn } from "../server/ai.functions";
 import { saveDesignFn } from "../server/designs.functions";
+import { decrementGenerationsFn } from "../server/stripe.functions";
 
 export const Route = createFileRoute("/tool")({
   component: BuyerTool,
@@ -84,6 +85,10 @@ async function downloadImage(url: string, filename: string) {
 
 function BuyerTool() {
   const { user } = useUser();
+  const navigate = useNavigate();
+  const generationsRemaining = (user?.publicMetadata?.generationsRemaining as number) ?? 0;
+  const plan = (user?.publicMetadata?.plan as string) ?? "free";
+  const hasGenerations = generationsRemaining > 0;
   const [stage, setStage] = useState<Stage>("upload");
   const [photos, setPhotos] = useState<PhotoEntry[]>([]);
   const [selectedStyle, setSelectedStyle] = useState<string | null>(null);
@@ -138,6 +143,13 @@ function BuyerTool() {
 
   const startGenerating = async () => {
     if (!selectedStyle || photos.length === 0) return;
+
+    // Check the user has enough generations
+    if (!user || generationsRemaining < photos.length) {
+      navigate({ to: "/checkout" });
+      return;
+    }
+
     setStage("generating");
     setGeneratedCount(0);
     // Clear previous after images so we regenerate cleanly
@@ -154,6 +166,10 @@ function BuyerTool() {
         });
         const result = await generateRoomImageFn({ data: { imageDataUri, style: selectedStyle, roomId: photo.roomTypeId! } });
         updated[i] = { ...updated[i], afterUrl: result.generatedImageUrl };
+        // Decrement generation count after each successful generation
+        if (user) {
+          await decrementGenerationsFn({ userId: user.id }).catch(console.error);
+        }
       } catch (err) {
         console.error("Generation failed for", photo.id, err);
       }
@@ -349,7 +365,33 @@ function BuyerTool() {
               <SectionLabel>Choose your interior style</SectionLabel>
               <button onClick={() => setStage("label")} style={{ background: "transparent", border: "none", color: S.muted, cursor: "pointer", fontSize: "13px", fontFamily: "'DM Sans', sans-serif" }}>Back</button>
             </div>
-            <p style={{ fontSize: "13px", color: S.muted, marginBottom: "32px" }}>AI will reimagine all {photos.length} room{photos.length !== 1 ? "s" : ""} in your chosen style.</p>
+            <p style={{ fontSize: "13px", color: S.muted, marginBottom: "24px" }}>AI will reimagine all {photos.length} room{photos.length !== 1 ? "s" : ""} in your chosen style.</p>
+
+            {/* Generation balance warning */}
+            {user && (
+              <div style={{
+                padding: "12px 16px", borderRadius: "2px", marginBottom: "24px",
+                background: generationsRemaining === 0 ? "#fef0ef" : generationsRemaining < photos.length ? "#fff8ec" : "#f0f7f0",
+                border: `1px solid ${generationsRemaining === 0 ? "#f5c6c2" : generationsRemaining < photos.length ? "#f5dea0" : "#b8d4b8"}`,
+                display: "flex", justifyContent: "space-between", alignItems: "center",
+              }}>
+                <span style={{ fontSize: "13px", color: generationsRemaining === 0 ? "#c0392b" : "#555" }}>
+                  {generationsRemaining === 0
+                    ? "No generations remaining — purchase to continue"
+                    : generationsRemaining < photos.length
+                    ? `Only ${generationsRemaining} generation${generationsRemaining !== 1 ? "s" : ""} remaining — you need ${photos.length}`
+                    : `${generationsRemaining} generation${generationsRemaining !== 1 ? "s" : ""} remaining`}
+                </span>
+                {generationsRemaining < photos.length && (
+                  <button
+                    onClick={() => navigate({ to: "/checkout" })}
+                    style={{ background: S.gold, color: S.white, border: "none", padding: "6px 14px", borderRadius: "2px", fontSize: "11px", fontWeight: 500, cursor: "pointer", fontFamily: "'DM Sans', sans-serif", letterSpacing: "0.08em", textTransform: "uppercase", whiteSpace: "nowrap", marginLeft: "12px" }}
+                  >
+                    Top up
+                  </button>
+                )}
+              </div>
+            )}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "16px", marginBottom: "48px" }}>
               {STYLES.map(style => (
                 <div key={style.id} onClick={() => setSelectedStyle(style.id)} style={{ cursor: "pointer", borderRadius: "2px", overflow: "hidden", border: `3px solid ${selectedStyle === style.id ? S.gold : "transparent"}`, transition: "all 0.2s ease", background: S.white, boxShadow: "0 4px 24px rgba(26,22,18,0.08)", transform: selectedStyle === style.id ? "translateY(-2px)" : "none" }}>
