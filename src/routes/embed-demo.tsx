@@ -64,10 +64,10 @@ function EmbedDemo() {
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
       }}>
         <p style={{ fontSize: '12px', color: '#b8965a', letterSpacing: '0.08em' }}>
-          ◆ DEMO — This is a mock estate agent website. The Virtual Staging IOM widget activates when you click the button below.
+          - DEMO - This is a mock estate agent website. The Virtual Staging IOM widget activates when you click the button below.
         </p>
         <a href="#embed-code" style={{ fontSize: '12px', color: 'rgba(245,240,232,0.5)', textDecoration: 'none' }}>
-          View embed code ↓
+          View embed code v
         </a>
       </div>
 
@@ -148,7 +148,7 @@ function EmbedDemo() {
             transition: 'all 0.2s',
           }}
         >
-          <span style={{ color: '#c8a96e', fontSize: '14px' }}>✦</span>
+          <span style={{ color: '#c8a96e', fontSize: '14px' }}>*</span>
           <div>
             <div style={{ fontSize: '13px', fontWeight: 500, letterSpacing: '0.04em' }}>
               Reimagine this home
@@ -268,7 +268,7 @@ function EmbedDemo() {
                   background: 'transparent', border: 'none',
                   color: 'rgba(245,240,232,0.4)', cursor: 'pointer',
                   fontSize: '20px', lineHeight: 1, padding: '4px',
-                }}>✕</button>
+                }}>X</button>
               </div>
               <p style={{ fontSize: '12px', color: '#8a7f72', letterSpacing: '0.06em' }}>
                 Reimagine 14 Elmwood Crescent
@@ -335,7 +335,7 @@ function EmbedDemo() {
                     Reimagine 5 rooms
                   </button>
                   <p style={{ fontSize: '11px', color: '#8a7f72', textAlign: 'center', marginTop: '12px' }}>
-                    AI Visualisation — not a guarantee of appearance
+                    AI Visualisation - not a guarantee of appearance
                   </p>
                 </>
               )}
