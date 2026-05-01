@@ -43,7 +43,7 @@ function AgentDashboard() {
 
   const copySnippet = () => {
     navigator.clipboard.writeText(
-      `<script\n  src="https://cdn.Virtual Staging IOM.ai/widget.js"\n  data-key="ag_live_acorn8a2f9b"\n  data-accent="${accentColor}"\n  data-watermark="true"\n  defer\n></script>`
+      `<script\n  src="https://cdn.virtualstagingIOM.com/widget.js"\n  data-key="ag_live_acorn8a2f9b"\n  data-accent="${accentColor}"\n  data-watermark="true"\n  defer\n></script>`
     ).then(() => {
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
@@ -365,7 +365,7 @@ function AgentDashboard() {
                 <div style={{ padding: '22px', background: C.ink }}>
                   <pre style={{ fontFamily: 'monospace', fontSize: '13px', lineHeight: 1.8, color: '#a8c4d8', margin: 0, whiteSpace: 'pre-wrap' }}>
 {`<script
-  src="https://cdn.Virtual Staging IOM.ai/widget.js"
+  src="https://cdn.virtualstagingIOM.com/widget.js"
   data-key="ag_live_acorn8a2f9b"
   data-accent="`}<span style={{ color: '#a8d8a8' }}>{accentColor}</span>{`"
   data-watermark="true"
