@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useRef, useCallback } from "react";
-import React from 'react'
+import React from "react";
+import { useUser } from "@clerk/clerk-react";
 import { generateRoomImageFn } from "../server/ai.functions";
 
 export const Route = createFileRoute("/tool")({
@@ -53,12 +54,55 @@ interface PhotoEntry {
   afterUrl?: string;
 }
 
+interface SavedDesign {
+  id: string;
+  roomLabel: string;
+  styleName: string;
+  afterUrl: string;
+  savedAt: string;
+}
+
+// Save a design to the user's account via Netlify Blobs
+async function saveDesignToAccount(userId: string, design: SavedDesign) {
+  try {
+    await fetch("/api/save-design", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId, design }),
+    });
+  } catch (err) {
+    console.error("Failed to save design:", err);
+  }
+}
+
+// Download a generated image by fetching it as a blob
+async function downloadImage(url: string, filename: string) {
+  try {
+    const response = await fetch(url);
+    const blob = await response.blob();
+    const objectUrl = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = objectUrl;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(objectUrl);
+  } catch (err) {
+    // Fallback: open in new tab if cross-origin download fails
+    window.open(url, "_blank");
+  }
+}
+
 function BuyerTool() {
+  const { user } = useUser();
   const [stage, setStage] = useState<Stage>("upload");
   const [photos, setPhotos] = useState<PhotoEntry[]>([]);
   const [selectedStyle, setSelectedStyle] = useState<string | null>(null);
   const [generatedCount, setGeneratedCount] = useState(0);
   const [showBefore, setShowBefore] = useState<Record<string, boolean>>({});
+  const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
+  const [savingIds, setSavingIds] = useState<Set<string>>(new Set());
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [dragging, setDragging] = useState(false);
 
@@ -108,7 +152,8 @@ function BuyerTool() {
     if (!selectedStyle || photos.length === 0) return;
     setStage("generating");
     setGeneratedCount(0);
-    const updated = [...photos];
+    // Clear previous after images so we regenerate cleanly
+    const updated = photos.map(p => ({ ...p, afterUrl: undefined }));
 
     for (let i = 0; i < updated.length; i++) {
       const photo = updated[i];
@@ -128,12 +173,44 @@ function BuyerTool() {
     }
 
     setPhotos(updated);
+    setSavedIds(new Set()); // Reset saved state for new generation
     setTimeout(() => setStage("results"), 400);
   };
 
+  // Try another style: keep photos and labels, just go back to style picker
+  const tryAnotherStyle = () => {
+    setSelectedStyle(null);
+    setShowBefore({});
+    setSavedIds(new Set());
+    setStage("style");
+  };
+
+  // Full reset: clear everything
   const reset = () => {
-    setStage("upload"); setPhotos([]); setSelectedStyle(null);
-    setGeneratedCount(0); setShowBefore({});
+    setStage("upload");
+    setPhotos([]);
+    setSelectedStyle(null);
+    setGeneratedCount(0);
+    setShowBefore({});
+    setSavedIds(new Set());
+  };
+
+  const handleSaveDesign = async (photo: PhotoEntry) => {
+    if (!user || !photo.afterUrl) return;
+    const roomLabel = ROOM_TYPES.find(r => r.id === photo.roomTypeId)?.label || "Room";
+    const styleName = STYLES.find(s => s.id === selectedStyle)?.label || "";
+
+    setSavingIds(prev => new Set(prev).add(photo.id));
+    const design: SavedDesign = {
+      id: `${photo.id}-${Date.now()}`,
+      roomLabel,
+      styleName,
+      afterUrl: photo.afterUrl,
+      savedAt: new Date().toISOString(),
+    };
+    await saveDesignToAccount(user.id, design);
+    setSavingIds(prev => { const s = new Set(prev); s.delete(photo.id); return s; });
+    setSavedIds(prev => new Set(prev).add(photo.id));
   };
 
   const styleName = STYLES.find(s => s.id === selectedStyle)?.label || "";
@@ -202,7 +279,7 @@ function BuyerTool() {
                     <button
                       onClick={(e) => { e.stopPropagation(); removePhoto(photo.id); }}
                       style={{ position: "absolute", top: "6px", right: "6px", width: "24px", height: "24px", background: "rgba(26,22,18,0.7)", border: "none", borderRadius: "50%", color: S.cream, cursor: "pointer", fontSize: "14px", lineHeight: "1", display: "flex", alignItems: "center", justifyContent: "center" }}
-                    >X</button>
+                    >×</button>
                   </div>
                 ))}
               </div>
@@ -330,6 +407,8 @@ function BuyerTool() {
               {photos.map(photo => {
                 const roomLabel = ROOM_TYPES.find(r => r.id === photo.roomTypeId)?.label || "Room";
                 const isBefore = showBefore[photo.id];
+                const isSaved = savedIds.has(photo.id);
+                const isSaving = savingIds.has(photo.id);
                 return (
                   <div key={photo.id} style={{ background: S.white, borderRadius: "2px", overflow: "hidden", boxShadow: "0 4px 24px rgba(26,22,18,0.08)" }}>
                     <div style={{ position: "relative", aspectRatio: "4/3" }}>
@@ -345,33 +424,78 @@ function BuyerTool() {
                       <div style={{ position: "absolute", top: "10px", left: "10px", background: "rgba(26,22,18,0.7)", color: S.cream, fontSize: "10px", padding: "3px 8px", borderRadius: "2px", letterSpacing: "0.08em", textTransform: "uppercase" }}>
                         {isBefore ? "Before" : "After"}
                       </div>
-                      {!isBefore && (
+                      {!isBefore && photo.afterUrl && (
                         <div style={{ position: "absolute", top: "10px", right: "10px", background: "rgba(184,150,90,0.9)", color: S.white, fontSize: "10px", padding: "3px 8px", borderRadius: "2px", letterSpacing: "0.06em" }}>
                           AI Visualisation
                         </div>
                       )}
                     </div>
-                    <div style={{ padding: "14px 16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <div>
-                        <span style={{ fontSize: "13px", fontWeight: 500, color: S.ink, display: "block" }}>{roomLabel}</span>
-                        <span style={{ fontSize: "11px", color: S.muted }}>{styleName} Style</span>
+
+                    {/* Card footer */}
+                    <div style={{ padding: "12px 16px", borderTop: `1px solid ${S.warm}` }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
+                        <div>
+                          <span style={{ fontSize: "13px", fontWeight: 500, color: S.ink, display: "block" }}>{roomLabel}</span>
+                          <span style={{ fontSize: "11px", color: S.muted }}>{styleName} Style</span>
+                        </div>
+                        <button
+                          onClick={() => setShowBefore(prev => ({ ...prev, [photo.id]: !prev[photo.id] }))}
+                          style={{ background: "transparent", border: `1px solid ${S.warm}`, color: S.muted, padding: "5px 12px", borderRadius: "2px", fontSize: "11px", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", letterSpacing: "0.06em" }}
+                        >
+                          {isBefore ? "Show after" : "Show before"}
+                        </button>
                       </div>
-                      <button onClick={() => setShowBefore(prev => ({ ...prev, [photo.id]: !prev[photo.id] }))} style={{ background: "transparent", border: `1px solid ${S.warm}`, color: S.muted, padding: "5px 12px", borderRadius: "2px", fontSize: "11px", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", letterSpacing: "0.06em" }}>
-                        {isBefore ? "Show after" : "Show before"}
-                      </button>
+
+                      {/* Action buttons — only shown when viewing the after image */}
+                      {!isBefore && photo.afterUrl && (
+                        <div style={{ display: "flex", gap: "8px" }}>
+                          {/* Download button */}
+                          <button
+                            onClick={() => downloadImage(photo.afterUrl!, `${roomLabel}-${styleName}.jpg`)}
+                            style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", background: "transparent", border: `1px solid ${S.gold}`, color: S.gold, padding: "7px 12px", borderRadius: "2px", fontSize: "11px", fontWeight: 500, cursor: "pointer", fontFamily: "'DM Sans', sans-serif", letterSpacing: "0.06em" }}
+                          >
+                            <DownloadIcon />
+                            Download
+                          </button>
+
+                          {/* Save to account button — only shown if signed in */}
+                          {user && (
+                            <button
+                              onClick={() => handleSaveDesign(photo)}
+                              disabled={isSaved || isSaving}
+                              style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", background: isSaved ? S.warm : "transparent", border: `1px solid ${isSaved ? S.warm : S.muted}`, color: isSaved ? S.muted : S.muted, padding: "7px 12px", borderRadius: "2px", fontSize: "11px", fontWeight: 500, cursor: isSaved ? "default" : "pointer", fontFamily: "'DM Sans', sans-serif", letterSpacing: "0.06em" }}
+                            >
+                              {isSaving ? "Saving..." : isSaved ? "✓ Saved" : "Save to account"}
+                            </button>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
                 );
               })}
             </div>
-            <div style={{ marginTop: "48px", padding: "32px", background: S.ink, borderRadius: "2px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+
+            {/* Bottom CTA bar */}
+            <div style={{ marginTop: "48px", padding: "32px", background: S.ink, borderRadius: "2px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: "24px", flexWrap: "wrap" }}>
               <div>
                 <p style={{ color: S.cream, fontSize: "15px", fontWeight: 400, marginBottom: "4px" }}>Love what you see?</p>
-                <p style={{ color: S.muted, fontSize: "13px" }}>In production, buyers see this automatically on your listing page - no upload needed.</p>
+                <p style={{ color: S.muted, fontSize: "13px" }}>Your photos are still loaded — pick a new style without re-uploading.</p>
               </div>
-              <button onClick={reset} style={{ background: "transparent", border: "1px solid rgba(184,150,90,0.4)", color: S.cream, padding: "10px 24px", borderRadius: "2px", fontSize: "12px", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", letterSpacing: "0.08em", textTransform: "uppercase" }}>
-                Try another style
-              </button>
+              <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
+                <button
+                  onClick={tryAnotherStyle}
+                  style={{ background: S.gold, color: S.white, padding: "10px 24px", borderRadius: "2px", fontSize: "12px", fontWeight: 500, cursor: "pointer", fontFamily: "'DM Sans', sans-serif", letterSpacing: "0.08em", textTransform: "uppercase", border: "none" }}
+                >
+                  Try another style
+                </button>
+                <button
+                  onClick={reset}
+                  style={{ background: "transparent", border: "1px solid rgba(184,150,90,0.4)", color: S.cream, padding: "10px 24px", borderRadius: "2px", fontSize: "12px", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", letterSpacing: "0.08em", textTransform: "uppercase" }}
+                >
+                  Start over
+                </button>
+              </div>
             </div>
           </>
         )}
@@ -403,6 +527,16 @@ function CheckIcon() {
   return (
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
       <polyline points="20 6 9 17 4 12" />
+    </svg>
+  );
+}
+
+function DownloadIcon() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+      <polyline points="7 10 12 15 17 10" />
+      <line x1="12" y1="15" x2="12" y2="3" />
     </svg>
   );
 }
