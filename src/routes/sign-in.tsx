@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
+import React from 'react'
 import { useSignIn, useUser } from '@clerk/clerk-react'
 
 export const Route = createFileRoute('/sign-in')({
