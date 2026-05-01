@@ -93,7 +93,7 @@ function Home() {
         <div style={{ maxWidth: '900px', width: '100%', display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '1px', background: S.muted }}>
           {[
             { num: '72%', label: 'of buyers struggle to visualise potential from photos alone' },
-            { num: '3.2×', label: 'longer buyers spend on listings with interactive features' },
+            { num: '3.2x', label: 'longer buyers spend on listings with interactive features' },
             { num: '+38%', label: 'more viewing requests from listings using Virtual Staging IOM' },
           ].map((stat) => (
             <div key={stat.num} style={{
@@ -136,17 +136,17 @@ function Home() {
             {
               num: '01',
               title: 'Widget detects photos',
-              body: 'One script tag on your listing template. The widget automatically finds all property photos — no uploading, no manual setup per listing.',
+              body: 'One script tag on your listing template. The widget automatically finds all property photos -- no uploading, no manual setup per listing.',
             },
             {
               num: '02',
               title: 'Buyer picks a style',
-              body: 'A sleek panel slides in. Buyers choose from up to 8 curated interior styles — Scandinavian, Contemporary, Art Deco, and more.',
+              body: 'A sleek panel slides in. Buyers choose from up to 8 curated interior styles -- Scandinavian, Contemporary, Art Deco, and more.',
             },
             {
               num: '03',
               title: 'AI reimagines every room',
-              body: 'Each room is transformed in 15–30 seconds. Results stream back one by one. Before/after toggle lets buyers compare instantly.',
+              body: 'Each room is transformed in 15-30 seconds. Results stream back one by one. Before/after toggle lets buyers compare instantly.',
             },
           ].map((step) => (
             <div key={step.num} style={{
@@ -232,10 +232,10 @@ function Home() {
             </p>
             {[
               'Works with WordPress, Reapit, Alto, and custom sites',
-              'Loads asynchronously — zero impact on page speed',
+              'Loads asynchronously -- zero impact on page speed',
               'Customise accent colour to match your brand',
-              'Automatic image detection — no per-listing setup',
-              'Results cached — repeat visitors see instant results',
+              'Automatic image detection -- no per-listing setup',
+              'Results cached -- repeat visitors see instant results',
             ].map((item) => (
               <div key={item} style={{
                 display: 'flex', alignItems: 'flex-start', gap: '12px',
