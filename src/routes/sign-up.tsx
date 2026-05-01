@@ -103,7 +103,7 @@ function SignUpPage() {
               disabled={!userType}
               style={{ width: '100%', background: userType ? S.gold : S.warm, color: S.white, padding: '14px', borderRadius: '2px', border: 'none', fontSize: '13px', fontWeight: 500, letterSpacing: '0.1em', textTransform: 'uppercase', cursor: userType ? 'pointer' : 'not-allowed', fontFamily: "'DM Sans', sans-serif" }}
             >
-              Continue ->
+              Continue
             </button>
 
             <p style={{ textAlign: 'center', fontSize: '13px', color: S.muted, marginTop: '24px' }}>
@@ -116,7 +116,7 @@ function SignUpPage() {
         {/* Step 2: Account details */}
         {step === 'details' && (
           <>
-            <button onClick={() => setStep('type')} style={{ background: 'transparent', border: 'none', color: S.muted, cursor: 'pointer', fontSize: '13px', marginBottom: '24px', padding: 0, fontFamily: "'DM Sans', sans-serif" }}><- Back</button>
+            <button onClick={() => setStep('type')} style={{ background: 'transparent', border: 'none', color: S.muted, cursor: 'pointer', fontSize: '13px', marginBottom: '24px', padding: 0, fontFamily: "'DM Sans', sans-serif" }}>Back</button>
             <h1 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '36px', fontWeight: 300, color: S.ink, marginBottom: '8px' }}>
               {userType === 'agent' ? 'Agent account' : 'Buyer account'}
             </h1>
@@ -149,7 +149,7 @@ function SignUpPage() {
               </div>
               {error && <p style={{ fontSize: '13px', color: '#c0392b', padding: '10px 14px', background: '#fef0ef', borderRadius: '2px' }}>{error}</p>}
               <button type="submit" disabled={loading} style={{ background: S.gold, color: S.white, padding: '14px', borderRadius: '2px', border: 'none', fontSize: '13px', fontWeight: 500, letterSpacing: '0.1em', textTransform: 'uppercase', cursor: loading ? 'wait' : 'pointer', fontFamily: "'DM Sans', sans-serif", marginTop: '8px' }}>
-                {loading ? 'Creating account...' : 'Create account ->'}
+                {loading ? 'Creating account...' : 'Create account'}
               </button>
             </form>
           </>
@@ -168,7 +168,7 @@ function SignUpPage() {
               </div>
               {error && <p style={{ fontSize: '13px', color: '#c0392b', padding: '10px 14px', background: '#fef0ef', borderRadius: '2px' }}>{error}</p>}
               <button type="submit" disabled={loading} style={{ background: S.gold, color: S.white, padding: '14px', borderRadius: '2px', border: 'none', fontSize: '13px', fontWeight: 500, letterSpacing: '0.1em', textTransform: 'uppercase', cursor: loading ? 'wait' : 'pointer', fontFamily: "'DM Sans', sans-serif" }}>
-                {loading ? 'Verifying...' : 'Verify & continue ->'}
+                {loading ? 'Verifying...' : 'Verify and continue'}
               </button>
             </form>
           </>
