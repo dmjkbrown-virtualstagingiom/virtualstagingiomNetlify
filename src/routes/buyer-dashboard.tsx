@@ -236,7 +236,7 @@ function BuyerDashboardContent() {
                         </button>
                         <button
                           onClick={() => deleteDesign(design.id)}
-                          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: `1px solid ${S.warm}`, color: S.muted, padding: '7px 12px', borderRadius: '2px', fontSize: '11px', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif' }}
+                          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: `1px solid ${S.warm}`, color: S.muted, padding: '7px 12px', borderRadius: '2px', fontSize: '11px', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif" }}
                         >
                           Delete
                         </button>
