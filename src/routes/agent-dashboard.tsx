@@ -35,7 +35,7 @@ function AgentDashboardContent() {
   const firstName = user?.firstName || 'there'
   const agencyName = user?.unsafeMetadata?.agencyName as string | undefined
 
-  const embedCode = `<script src="https://cdn.homevision.ai/widget.js" data-key="ag_live_your_key_here" defer></script>`
+  const embedCode = `<script src="https://cdn.Virtual Staging IOM.ai/widget.js" data-key="ag_live_your_key_here" defer></script>`
 
   return (
     <div style={{ minHeight: '100vh', background: S.surface, padding: '40px 24px' }}>
