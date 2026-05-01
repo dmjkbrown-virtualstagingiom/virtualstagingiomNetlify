@@ -78,11 +78,11 @@ function AgentDashboard() {
         {/* Nav */}
         <nav style={{ flex: 1, padding: '16px 12px' }}>
           {[
-            { id: 'dashboard', icon: '▦', label: 'Dashboard' },
-            { id: 'listings', icon: '⊞', label: 'Listings', badge: '47' },
-            { id: 'integration', icon: '◇', label: 'Integration' },
-            { id: 'customise', icon: '◉', label: 'Customise' },
-            { id: 'billing', icon: '◈', label: 'Billing' },
+            { id: 'dashboard', icon: '#', label: 'Dashboard' },
+            { id: 'listings', icon: '+', label: 'Listings', badge: '47' },
+            { id: 'integration', icon: 'o', label: 'Integration' },
+            { id: 'customise', icon: 'o', label: 'Customise' },
+            { id: 'billing', icon: 'o', label: 'Billing' },
             { id: 'settings', icon: '⊙', label: 'Settings' },
           ].map((item) => (
             <button
@@ -334,7 +334,7 @@ function AgentDashboard() {
               <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: '6px', overflow: 'hidden', gridColumn: '1/-1' }}>
                 <div style={{ padding: '18px 22px', borderBottom: `1px solid ${C.border}` }}>
                   <div style={{ fontSize: '14px', fontWeight: 600, color: C.ink }}>API Key</div>
-                  <div style={{ fontSize: '12px', color: C.muted, marginTop: '2px' }}>Keep this secret — it authorises widget requests from your domain</div>
+                  <div style={{ fontSize: '12px', color: C.muted, marginTop: '2px' }}>Keep this secret -- it authorises widget requests from your domain</div>
                 </div>
                 <div style={{ padding: '22px', display: 'flex', gap: '12px', alignItems: 'center' }}>
                   <code style={{
@@ -359,7 +359,7 @@ function AgentDashboard() {
                     <div style={{ fontSize: '12px', color: C.muted, marginTop: '2px' }}>Paste before the closing &lt;/body&gt; tag in your listing template</div>
                   </div>
                   <Btn variant="ghost" size="sm" onClick={copySnippet}>
-                    {copied ? '✓ Copied!' : 'Copy snippet'}
+                    {copied ? 'v Copied!' : 'Copy snippet'}
                   </Btn>
                 </div>
                 <div style={{ padding: '22px', background: C.ink }}>
@@ -381,12 +381,12 @@ function AgentDashboard() {
                   <div style={{ fontSize: '14px', fontWeight: 600, color: C.ink, marginBottom: '8px' }}>{platform}</div>
                   <p style={{ fontSize: '13px', color: C.muted, lineHeight: 1.6, marginBottom: '16px' }}>
                     {platform === 'WordPress'
-                      ? 'Add the snippet via Appearance → Theme Editor → footer.php, or use a header/footer plugin.'
+                      ? 'Add the snippet via Appearance -> Theme Editor -> footer.php, or use a header/footer plugin.'
                       : platform === 'Reapit / Alto'
-                      ? 'Add the snippet to your listing detail page template via your CMS portal → custom scripts section.'
+                      ? 'Add the snippet to your listing detail page template via your CMS portal -> custom scripts section.'
                       : 'Paste the snippet before the closing </body> tag in your property detail page template.'}
                   </p>
-                  <Btn variant="ghost" size="sm">View guide →</Btn>
+                  <Btn variant="ghost" size="sm">View guide -></Btn>
                 </div>
               ))}
             </div>
@@ -571,7 +571,7 @@ function AgentDashboard() {
                       cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
                       letterSpacing: '0.06em',
                     }}>
-                      {plan.name === 'Growth' ? '✓ Current plan' : plan.name === 'Enterprise' ? 'Contact sales' : `Switch to ${plan.name}`}
+                      {plan.name === 'Growth' ? 'v Current plan' : plan.name === 'Enterprise' ? 'Contact sales' : `Switch to ${plan.name}`}
                     </button>
                   </div>
                 ))}
@@ -592,10 +592,10 @@ function AgentDashboard() {
                   </thead>
                   <tbody>
                     {[
-                      { date: '1 May 2026', desc: 'Growth Plan — May 2026', amount: '£149.00', status: 'Paid' },
-                      { date: '1 Apr 2026', desc: 'Growth Plan — April 2026', amount: '£149.00', status: 'Paid' },
-                      { date: '1 Mar 2026', desc: 'Growth Plan — March 2026', amount: '£149.00', status: 'Paid' },
-                      { date: '1 Feb 2026', desc: 'Starter → Growth upgrade', amount: '£100.00', status: 'Paid' },
+                      { date: '1 May 2026', desc: 'Growth Plan -- May 2026', amount: '£149.00', status: 'Paid' },
+                      { date: '1 Apr 2026', desc: 'Growth Plan -- April 2026', amount: '£149.00', status: 'Paid' },
+                      { date: '1 Mar 2026', desc: 'Growth Plan -- March 2026', amount: '£149.00', status: 'Paid' },
+                      { date: '1 Feb 2026', desc: 'Starter -> Growth upgrade', amount: '£100.00', status: 'Paid' },
                     ].map((inv, i) => (
                       <tr key={i} style={{ borderTop: `1px solid ${C.border}` }}>
                         <td style={{ padding: '12px 22px', fontSize: '13px', color: C.muted }}>{inv.date}</td>
