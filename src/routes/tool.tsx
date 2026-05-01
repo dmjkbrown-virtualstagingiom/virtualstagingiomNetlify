@@ -174,18 +174,17 @@ function BuyerTool() {
 
             {photos.length < MAX_PHOTOS && (
               <div
-                onClick={() => fileInputRef.current?.click()}
                 onDragOver={e => { e.preventDefault(); setDragging(true); }}
                 onDragLeave={() => setDragging(false)}
                 onDrop={e => { e.preventDefault(); setDragging(false); processFiles(e.dataTransfer.files); }}
-                style={{ border: `2px dashed ${dragging ? S.gold : S.warm}`, borderRadius: "4px", padding: "48px 32px", textAlign: "center", cursor: "pointer", background: dragging ? "#fdf5e8" : S.white, transition: "all 0.2s", marginBottom: "32px" }}
+                style={{ border: `2px dashed ${dragging ? S.gold : S.warm}`, borderRadius: "4px", padding: "48px 32px", textAlign: "center", cursor: "pointer", background: dragging ? "#fdf5e8" : S.white, transition: "all 0.2s", marginBottom: "32px", position: "relative" }}
               >
                 <input
                   ref={fileInputRef}
                   type="file"
                   accept="image/*"
                   multiple
-                  style={{ display: "none" }}
+                  style={{ position: "absolute", inset: 0, width: "100%", height: "100%", opacity: 0, cursor: "pointer" }}
                   onChange={e => { if (e.target.files) processFiles(e.target.files); e.target.value = ""; }}
                 />
                 <UploadIcon color={S.gold} />
@@ -200,9 +199,9 @@ function BuyerTool() {
                   <div key={photo.id} style={{ position: "relative", borderRadius: "2px", overflow: "hidden", boxShadow: "0 2px 12px rgba(26,22,18,0.10)" }}>
                     <img src={photo.url} alt="Room" style={{ width: "100%", aspectRatio: "4/3", objectFit: "cover", display: "block" }} />
                     <button
-                      onClick={() => removePhoto(photo.id)}
+                      onClick={(e) => { e.stopPropagation(); removePhoto(photo.id); }}
                       style={{ position: "absolute", top: "6px", right: "6px", width: "24px", height: "24px", background: "rgba(26,22,18,0.7)", border: "none", borderRadius: "50%", color: S.cream, cursor: "pointer", fontSize: "14px", lineHeight: "1", display: "flex", alignItems: "center", justifyContent: "center" }}
-                    >x</button>
+                    >X</button>
                   </div>
                 ))}
               </div>
