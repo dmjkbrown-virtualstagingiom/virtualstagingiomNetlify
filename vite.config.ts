@@ -11,8 +11,8 @@ export default defineConfig({
       projects: ['./tsconfig.json'],
     }),
     tailwindcss(),
-    react(),           // ← add this
-    tanstackStart(),
+    tanstackStart(),   // ← must come BEFORE react()
+    react(),           // ← after tanstackStart
     netlify(),
   ],
 })
