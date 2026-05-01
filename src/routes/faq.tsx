@@ -24,7 +24,7 @@ const faqs = [
       {
         question: 'What is Virtual Staging IOM?',
         answer:
-          'Virtual Staging IOM is an AI-powered interior redesign widget for estate agent websites. Buyers click a button on a listing page, choose an interior style, and the AI reimagines every room in 15–30 seconds. Estate agents add a single script tag — no per-listing setup required.',
+          'Virtual Staging IOM is an AI-powered interior redesign widget for estate agent websites. Buyers click a button on a listing page, choose an interior style, and the AI reimagines every room in 15-30 seconds. Estate agents add a single script tag -- no per-listing setup required.',
       },
       {
         question: 'How does the AI generation work?',
@@ -39,7 +39,7 @@ const faqs = [
       {
         question: 'Do buyers need to upload photos?',
         answer:
-          'No. In production, the widget automatically detects property photos already on the listing page — buyers never need to upload anything. The "upload" step in the standalone buyer tool demo is for testing purposes only.',
+          'No. In production, the widget automatically detects property photos already on the listing page -- buyers never need to upload anything. The "upload" step in the standalone buyer tool demo is for testing purposes only.',
       },
     ],
   },
@@ -49,7 +49,7 @@ const faqs = [
       {
         question: 'How do I add Virtual Staging IOM to my listing pages?',
         answer:
-          'Paste one script tag before the closing </body> tag in your listing page template. The widget activates automatically on every listing. For platforms like WordPress, Reapit, or Alto, we provide step-by-step guides in your dashboard → Integration tab.',
+          'Paste one script tag before the closing </body> tag in your listing page template. The widget activates automatically on every listing. For platforms like WordPress, Reapit, or Alto, we provide step-by-step guides in your dashboard -> Integration tab.',
       },
       {
         question: 'Does the widget affect my page speed?',
@@ -74,12 +74,12 @@ const faqs = [
       {
         question: 'Can I change plans at any time?',
         answer:
-          'Yes. You can upgrade or downgrade at any time from your dashboard → Billing tab. Upgrades take effect immediately (prorated). Downgrades take effect at the start of your next billing cycle.',
+          'Yes. You can upgrade or downgrade at any time from your dashboard -> Billing tab. Upgrades take effect immediately (prorated). Downgrades take effect at the start of your next billing cycle.',
       },
       {
         question: 'Do you offer a free trial?',
         answer:
-          'The Starter plan (£49/month) comes with a 14-day free trial — no credit card required. Growth and Agency plans can be trialled by contacting us at hello@virtualstagingIOM.com.',
+          'The Starter plan (£49/month) comes with a 14-day free trial -- no credit card required. Growth and Agency plans can be trialled by contacting us at hello@virtualstagingIOM.com.',
       },
     ],
   },
@@ -94,7 +94,7 @@ const faqs = [
       {
         question: 'What results are estate agents seeing?',
         answer:
-          'Beta partners report a 38% increase in viewing requests from listings using Virtual Staging IOM, buyers spending 3.2× longer on listing pages, and measurably higher engagement with listings under £1.5M where buyers are most likely to personalise.',
+          'Beta partners report a 38% increase in viewing requests from listings using Virtual Staging IOM, buyers spending 3.2x longer on listing pages, and measurably higher engagement with listings under £1.5M where buyers are most likely to personalise.',
       },
     ],
   },
