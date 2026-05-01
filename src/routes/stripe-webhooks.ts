@@ -1,6 +1,6 @@
 import { createAPIFileRoute } from '@tanstack/react-start/api'
 import Stripe from 'stripe'
-import { clerkClient } from '@clerk/clerk-sdk-node'
+import { clerkClient } from '@clerk/express'
 
 // How many generations each plan grants
 const PLAN_ALLOWANCES: Record<string, number> = {
@@ -114,4 +114,4 @@ export const APIRoute = createAPIFileRoute('/api/stripe-webhook')({
 
     return new Response('ok', { status: 200 })
   },
-})
+})})
