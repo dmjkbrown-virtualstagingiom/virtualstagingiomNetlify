@@ -94,7 +94,7 @@ function Home() {
           {[
             { num: '72%', label: 'of buyers struggle to visualise potential from photos alone' },
             { num: '3.2×', label: 'longer buyers spend on listings with interactive features' },
-            { num: '+38%', label: 'more viewing requests from listings using HomeVision' },
+            { num: '+38%', label: 'more viewing requests from listings using Virtual Staging IOM' },
           ].map((stat) => (
             <div key={stat.num} style={{
               background: S.cream, padding: '32px 36px', textAlign: 'center',
@@ -256,7 +256,7 @@ function Home() {
             </div>
             <div style={{ color: '#a8c4d8' }}>&lt;script</div>
             <div style={{ color: S.goldLight, paddingLeft: '16px' }}>
-              src="https://cdn.homevision.ai/widget.js"
+              src="https://cdn.virtualstagingIOM.com/widget.js"
             </div>
             <div style={{ color: '#a8d4a8', paddingLeft: '16px' }}>
               data-key="ag_live_<span style={{ color: S.muted }}>your_key_here</span>"
@@ -401,7 +401,7 @@ function Home() {
         <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '20px', fontWeight: 300, color: S.ink }}>
           Home<span style={{ color: S.gold, fontStyle: 'italic' }}>Vision</span>
         </span>
-        <span>© 2026 HomeVision · homevision.ai · hello@homevision.ai</span>
+        <span>© 2026 Virtual Staging IOM · virtualstagingIOM.com · hello@virtualstagingIOM.com</span>
         <div style={{ display: 'flex', gap: '24px' }}>
           <Link to="/faq" style={{ color: S.muted, textDecoration: 'none' }}>FAQ</Link>
           <Link to="/tool" style={{ color: S.muted, textDecoration: 'none' }}>Buyer Tool</Link>
@@ -461,3 +461,4 @@ const PLANS = [
     highlighted: false,
   },
 ]
+
