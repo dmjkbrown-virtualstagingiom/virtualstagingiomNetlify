@@ -113,6 +113,7 @@ function EmbedDemo() {
           gridTemplateColumns: '2fr 1fr 1fr',
           gridTemplateRows: '260px 260px',
           gap: '4px', maxHeight: '528px', overflow: 'hidden',
+          position: 'relative',
         }}>
           {ROOMS.map((room, idx) => (
             <div key={idx} style={{
@@ -133,12 +134,14 @@ function EmbedDemo() {
             </div>
           ))}
         </div>
+      </div>
 
-        {/* Widget trigger button */}
+      {/* Widget trigger button - outside overflow:hidden grid */}
+      <div style={{ position: 'relative', marginTop: '-72px', display: 'flex', justifyContent: 'flex-end', paddingRight: '20px', zIndex: 50, pointerEvents: 'none' }}>
         <button
           onClick={openWidget}
           style={{
-            position: 'absolute', bottom: '20px', right: '20px', zIndex: 10,
+            pointerEvents: 'all',
             background: 'rgba(28,43,58,0.9)', backdropFilter: 'blur(8px)',
             color: '#fff', border: '1px solid rgba(200,169,110,0.4)',
             borderRadius: '4px', padding: '12px 20px',
@@ -159,6 +162,7 @@ function EmbedDemo() {
           </div>
         </button>
       </div>
+      <div style={{ height: '52px' }} />
 
       {/* Listing body */}
       <div style={{
