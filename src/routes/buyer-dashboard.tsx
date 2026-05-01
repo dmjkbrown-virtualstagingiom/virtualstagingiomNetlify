@@ -54,11 +54,18 @@ function BuyerDashboardContent() {
 
   useEffect(() => {
     if (!user) return
+    const load = async () => {
     setLoadingDesigns(true)
-    getDesignsFn({ userId: user.id })
-      .then(data => setDesigns(data.designs || []))
-      .catch(() => setDesigns([]))
-      .finally(() => setLoadingDesigns(false))
+    try {
+      const data = await getDesignsFn({ userId: user.id })
+      setDesigns(data.designs || [])
+    } catch {
+      setDesigns([])
+    } finally {
+      setLoadingDesigns(false)
+    }
+    }
+    load()
   }, [user])
 
   async function deleteDesign(designId: string) {
