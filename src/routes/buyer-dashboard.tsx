@@ -47,7 +47,7 @@ function BuyerDashboardContent() {
   useEffect(() => {
     if (!user) return
     setLoadingDesigns(true)
-    getDesignsFn({ data: { userId: user.id } })
+    getDesignsFn({ userId: user.id })
       .then(data => setDesigns(data.designs || []))
       .catch(() => setDesigns([]))
       .finally(() => setLoadingDesigns(false))
@@ -56,7 +56,7 @@ function BuyerDashboardContent() {
   async function deleteDesign(designId: string) {
     if (!user) return
     setDesigns(prev => prev.filter(d => d.id !== designId))
-    await deleteDesignFn({ data: { userId: user.id, designId } }).catch(console.error)
+    await deleteDesignFn({ userId: user.id, designId }).catch(console.error)
   }
 
   async function downloadImage(url: string, filename: string) {
