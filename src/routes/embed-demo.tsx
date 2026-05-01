@@ -138,7 +138,7 @@ function EmbedDemo() {
         <button
           onClick={openWidget}
           style={{
-            position: 'absolute', bottom: '20px', right: '20px',
+            position: 'absolute', bottom: '20px', right: '20px', zIndex: 10,
             background: 'rgba(28,43,58,0.9)', backdropFilter: 'blur(8px)',
             color: '#fff', border: '1px solid rgba(200,169,110,0.4)',
             borderRadius: '4px', padding: '12px 20px',
