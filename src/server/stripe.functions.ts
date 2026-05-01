@@ -1,6 +1,6 @@
 import { createServerFn } from '@tanstack/react-start'
 import Stripe from 'stripe'
-import { clerkClient } from '@clerk/clerk-sdk-node'
+import { clerkClient } from '@clerk/express'
 
 // Generation allowances per plan
 const PLAN_ALLOWANCES = {
@@ -71,4 +71,4 @@ export const getGenerationsFn = createServerFn(
     const plan = (user.publicMetadata?.plan as string) ?? 'free'
     return { generationsRemaining, plan }
   }
-)
+))
