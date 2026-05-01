@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useState, useEffect } from 'react'
 import React from 'react'
 import { useUser, SignedIn, SignedOut, RedirectToSignIn } from '@clerk/clerk-react'
+import { getDesignsFn, deleteDesignFn } from '../server/designs.functions'
 
 export const Route = createFileRoute('/buyer-dashboard')({
   component: BuyerDashboard,
@@ -46,8 +47,7 @@ function BuyerDashboardContent() {
   useEffect(() => {
     if (!user) return
     setLoadingDesigns(true)
-    fetch(`/api/get-designs?userId=${user.id}`)
-      .then(r => r.json())
+    getDesignsFn({ data: { userId: user.id } })
       .then(data => setDesigns(data.designs || []))
       .catch(() => setDesigns([]))
       .finally(() => setLoadingDesigns(false))
@@ -56,11 +56,7 @@ function BuyerDashboardContent() {
   async function deleteDesign(designId: string) {
     if (!user) return
     setDesigns(prev => prev.filter(d => d.id !== designId))
-    await fetch('/api/delete-design', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId: user.id, designId }),
-    }).catch(console.error)
+    await deleteDesignFn({ data: { userId: user.id, designId } }).catch(console.error)
   }
 
   async function downloadImage(url: string, filename: string) {
