@@ -197,7 +197,7 @@ function BuyerTool() {
       savedAt: new Date().toISOString(),
     };
     try {
-      await saveDesignFn({ data: { userId: user.id, design } });
+      await saveDesignFn({ userId: user.id, design });
     } catch (err) {
       console.error("Failed to save design:", err);
     }
