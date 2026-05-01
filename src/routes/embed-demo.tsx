@@ -485,5 +485,3 @@ function StyledRoomMini({ style, label }: { style: string; label: string }) {
     </div>
   )
 }
-
-
