@@ -3,6 +3,7 @@ import { useState, useRef, useCallback } from "react";
 import React from "react";
 import { useUser } from "@clerk/clerk-react";
 import { generateRoomImageFn } from "../server/ai.functions";
+import { saveDesignFn } from "../server/designs.functions";
 
 export const Route = createFileRoute("/tool")({
   component: BuyerTool,
@@ -60,19 +61,6 @@ interface SavedDesign {
   styleName: string;
   afterUrl: string;
   savedAt: string;
-}
-
-// Save a design to the user's account via Netlify Blobs
-async function saveDesignToAccount(userId: string, design: SavedDesign) {
-  try {
-    await fetch("/api/save-design", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId, design }),
-    });
-  } catch (err) {
-    console.error("Failed to save design:", err);
-  }
 }
 
 // Download a generated image by fetching it as a blob
@@ -208,7 +196,11 @@ function BuyerTool() {
       afterUrl: photo.afterUrl,
       savedAt: new Date().toISOString(),
     };
-    await saveDesignToAccount(user.id, design);
+    try {
+      await saveDesignFn({ data: { userId: user.id, design } });
+    } catch (err) {
+      console.error("Failed to save design:", err);
+    }
     setSavingIds(prev => { const s = new Set(prev); s.delete(photo.id); return s; });
     setSavedIds(prev => new Set(prev).add(photo.id));
   };
