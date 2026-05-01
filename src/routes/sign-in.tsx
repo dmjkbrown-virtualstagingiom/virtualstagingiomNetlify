@@ -58,7 +58,7 @@ function SignInPage() {
           </div>
           {error && <p style={{ fontSize: '13px', color: '#c0392b', padding: '10px 14px', background: '#fef0ef', borderRadius: '2px' }}>{error}</p>}
           <button type="submit" disabled={loading} style={{ background: S.gold, color: S.white, padding: '14px', borderRadius: '2px', border: 'none', fontSize: '13px', fontWeight: 500, letterSpacing: '0.1em', textTransform: 'uppercase', cursor: loading ? 'wait' : 'pointer', fontFamily: "'DM Sans', sans-serif", marginTop: '8px' }}>
-            {loading ? 'Signing in...' : 'Sign in ->'}
+            {loading ? 'Signing in...' : 'Sign in'}
           </button>
         </form>
 
