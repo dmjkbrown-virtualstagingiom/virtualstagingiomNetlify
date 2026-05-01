@@ -11,7 +11,7 @@ export const Route = createRootRoute({
     meta: [
       { charSet: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { title: 'HomeVision — AI Interior Redesign for Property Listings' },
+      { title: 'VirtualStagingIOM — AI Interior Redesign for Property Listings' },
     ],
     links: [
       { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
