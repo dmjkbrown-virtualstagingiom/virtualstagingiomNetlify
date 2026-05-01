@@ -216,5 +216,3 @@ function Accordion({ question, answer }: { question: string; answer: string }) {
     </div>
   )
 }
-
-
