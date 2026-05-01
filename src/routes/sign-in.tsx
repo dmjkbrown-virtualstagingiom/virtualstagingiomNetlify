@@ -45,7 +45,7 @@ function SignInPage() {
     <div style={{ minHeight: 'calc(100vh - 72px)', background: S.surface, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '48px' }}>
       <div style={{ width: '100%', maxWidth: '420px' }}>
         <h1 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '36px', fontWeight: 300, color: S.ink, marginBottom: '8px' }}>Welcome back</h1>
-        <p style={{ fontSize: '14px', color: S.muted, marginBottom: '40px' }}>Sign in to your HomeVision account</p>
+        <p style={{ fontSize: '14px', color: S.muted, marginBottom: '40px' }}>Sign in to your Virtual Staging IOM account</p>
 
         <form onSubmit={handleSignIn} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div>
@@ -73,3 +73,4 @@ function SignInPage() {
 
 const labelStyle: React.CSSProperties = { display: 'block', fontSize: '11px', fontWeight: 500, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#8a7f72', marginBottom: '6px' }
 const inputStyle: React.CSSProperties = { width: '100%', padding: '10px 14px', border: '1px solid #e8dcc8', borderRadius: '2px', fontSize: '14px', fontFamily: "'DM Sans', sans-serif", outline: 'none', boxSizing: 'border-box', background: '#ffffff' }
+
