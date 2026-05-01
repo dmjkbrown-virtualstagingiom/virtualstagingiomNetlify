@@ -74,7 +74,7 @@ function SiteNav() {
           color: '#f5f0e8',
           letterSpacing: '0.04em',
         }}>
-          Home<span style={{ color: '#b8965a', fontStyle: 'italic' }}>Vision</span>
+          Virtual Staging<span style={{ color: '#b8965a', fontStyle: 'italic' }}> IOM</span>
         </span>
       </Link>
  
@@ -173,4 +173,3 @@ function SiteNav() {
     </header>
   )
 }
- 
