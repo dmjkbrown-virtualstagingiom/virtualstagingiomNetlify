@@ -64,7 +64,7 @@ function EmbedDemo() {
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
       }}>
         <p style={{ fontSize: '12px', color: '#b8965a', letterSpacing: '0.08em' }}>
-          ◆ DEMO — This is a mock estate agent website. The HomeVision widget activates when you click the button below.
+          ◆ DEMO — This is a mock estate agent website. The Virtual Staging IOM widget activates when you click the button below.
         </p>
         <a href="#embed-code" style={{ fontSize: '12px', color: 'rgba(245,240,232,0.5)', textDecoration: 'none' }}>
           View embed code ↓
@@ -224,7 +224,7 @@ function EmbedDemo() {
           }}>
             <div style={{ color: '#8a9baa', marginBottom: '4px' }}>{'<!-- Place before </body> in your listing template -->'}</div>
             <div style={{ color: '#a8c4d8' }}>&lt;script</div>
-            <div style={{ color: '#a8d8a8', paddingLeft: '16px' }}>src="https://cdn.homevision.ai/widget.js"</div>
+            <div style={{ color: '#a8d8a8', paddingLeft: '16px' }}>src="https://cdn.virtualstagingIOM.com/widget.js"</div>
             <div style={{ color: '#a8d8a8', paddingLeft: '16px' }}>data-key="ag_live_<span style={{ color: '#666' }}>your_key_here</span>"</div>
             <div style={{ color: '#a8d8a8', paddingLeft: '16px' }}>data-accent="#c8a96e"</div>
             <div style={{ color: '#a8d8a8', paddingLeft: '16px' }}>data-watermark="true"</div>
@@ -485,3 +485,5 @@ function StyledRoomMini({ style, label }: { style: string; label: string }) {
     </div>
   )
 }
+
+
