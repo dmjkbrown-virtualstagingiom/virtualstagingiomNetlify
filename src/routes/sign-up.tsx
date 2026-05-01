@@ -63,7 +63,14 @@ function SignUpPage() {
       const result = await signUp.attemptEmailAddressVerification({ code })
       if (result.status === 'complete') {
         await setActive({ session: result.createdSessionId })
-        navigate({ to: userType === 'agent' ? '/agent-dashboard' : '/buyer-dashboard' })
+        // Read userType from unsafeMetadata on the result as a fallback
+        const resolvedUserType =
+          userType ??
+          (result as any).unsafeMetadata?.userType ??
+          'buyer'
+        navigate({ to: resolvedUserType === 'agent' ? '/agent-dashboard' : '/buyer-dashboard' })
+      } else {
+        setError('Verification incomplete — please try again.')
       }
     } catch (err: any) {
       setError(err.errors?.[0]?.message || 'Invalid code')
@@ -149,6 +156,8 @@ function SignUpPage() {
                 <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required style={inputStyle} placeholder="At least 8 characters" />
               </div>
               {error && <p style={{ fontSize: '13px', color: '#c0392b', padding: '10px 14px', background: '#fef0ef', borderRadius: '2px' }}>{error}</p>}
+              {/* Required by Clerk bot protection — do not remove */}
+              <div id="clerk-captcha" />
               <button type="submit" disabled={loading} style={{ background: S.gold, color: S.white, padding: '14px', borderRadius: '2px', border: 'none', fontSize: '13px', fontWeight: 500, letterSpacing: '0.1em', textTransform: 'uppercase', cursor: loading ? 'wait' : 'pointer', fontFamily: "'DM Sans', sans-serif", marginTop: '8px' }}>
                 {loading ? 'Creating account...' : 'Create account'}
               </button>
