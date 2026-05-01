@@ -1,3 +1,4 @@
+import React from 'react'
 import { HeadContent, Scripts, createRootRoute, Outlet } from '@tanstack/react-router'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { ClerkProvider, SignedIn, SignedOut, useUser, useClerk } from '@clerk/clerk-react'
@@ -10,7 +11,7 @@ export const Route = createRootRoute({
     meta: [
       { charSet: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { title: 'Virtual Staging IOM — AI Interior Redesign for Property Listings' },
+      { title: 'HomeVision — AI Interior Redesign for Property Listings' },
     ],
     links: [
       { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
@@ -74,7 +75,7 @@ function SiteNav() {
           color: '#f5f0e8',
           letterSpacing: '0.04em',
         }}>
-          Virtual Staging<span style={{ color: '#b8965a', fontStyle: 'italic' }}> IOM</span>
+          Home<span style={{ color: '#b8965a', fontStyle: 'italic' }}>Vision</span>
         </span>
       </Link>
  
