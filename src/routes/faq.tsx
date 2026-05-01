@@ -22,14 +22,14 @@ const faqs = [
     category: 'Product',
     items: [
       {
-        question: 'What is HomeVision?',
+        question: 'What is Virtual Staging IOM?',
         answer:
-          'HomeVision is an AI-powered interior redesign widget for estate agent websites. Buyers click a button on a listing page, choose an interior style, and the AI reimagines every room in 15–30 seconds. Estate agents add a single script tag — no per-listing setup required.',
+          'Virtual Staging IOM is an AI-powered interior redesign widget for estate agent websites. Buyers click a button on a listing page, choose an interior style, and the AI reimagines every room in 15–30 seconds. Estate agents add a single script tag — no per-listing setup required.',
       },
       {
         question: 'How does the AI generation work?',
         answer:
-          'HomeVision uses FLUX, a state-of-the-art image generation model, to reimagine property photos in a chosen interior style. Each image is processed via our API pipeline: room type is detected with Claude Vision, a tailored prompt is built, and the result is generated and cached for future visitors.',
+          'Virtual Staging IOM uses FLUX, a state-of-the-art image generation model, to reimagine property photos in a chosen interior style. Each image is processed via our API pipeline: room type is detected with Claude Vision, a tailored prompt is built, and the result is generated and cached for future visitors.',
       },
       {
         question: 'What interior styles are available?',
@@ -47,7 +47,7 @@ const faqs = [
     category: 'Integration',
     items: [
       {
-        question: 'How do I add HomeVision to my listing pages?',
+        question: 'How do I add Virtual Staging IOM to my listing pages?',
         answer:
           'Paste one script tag before the closing </body> tag in your listing page template. The widget activates automatically on every listing. For platforms like WordPress, Reapit, or Alto, we provide step-by-step guides in your dashboard → Integration tab.',
       },
@@ -59,7 +59,7 @@ const faqs = [
       {
         question: 'Can I customise the widget to match my brand?',
         answer:
-          'Yes. You can set your accent colour, button label, and which styles to offer from your dashboard. On Agency plans you can fully white-label the widget, removing all HomeVision branding.',
+          'Yes. You can set your accent colour, button label, and which styles to offer from your dashboard. On Agency plans you can fully white-label the widget, removing all Virtual Staging IOM branding.',
       },
     ],
   },
@@ -79,7 +79,7 @@ const faqs = [
       {
         question: 'Do you offer a free trial?',
         answer:
-          'The Starter plan (£49/month) comes with a 14-day free trial — no credit card required. Growth and Agency plans can be trialled by contacting us at hello@homevision.ai.',
+          'The Starter plan (£49/month) comes with a 14-day free trial — no credit card required. Growth and Agency plans can be trialled by contacting us at hello@virtualstagingIOM.com.',
       },
     ],
   },
@@ -94,7 +94,7 @@ const faqs = [
       {
         question: 'What results are estate agents seeing?',
         answer:
-          'Beta partners report a 38% increase in viewing requests from listings using HomeVision, buyers spending 3.2× longer on listing pages, and measurably higher engagement with listings under £1.5M where buyers are most likely to personalise.',
+          'Beta partners report a 38% increase in viewing requests from listings using Virtual Staging IOM, buyers spending 3.2× longer on listing pages, and measurably higher engagement with listings under £1.5M where buyers are most likely to personalise.',
       },
     ],
   },
@@ -116,9 +116,9 @@ function FAQ() {
             Frequently asked <em style={{ fontStyle: 'italic', color: '#d4b07a' }}>questions</em>
           </h1>
           <p style={{ color: '#8a7f72', fontSize: '15px', lineHeight: 1.7, maxWidth: '480px' }}>
-            Everything estate agents and buyers need to know about HomeVision.
+            Everything estate agents and buyers need to know about Virtual Staging IOM.
             Can't find an answer? Email us at{' '}
-            <a href="mailto:hello@homevision.ai" style={{ color: '#b8965a' }}>hello@homevision.ai</a>
+            <a href="mailto:hello@virtualstagingIOM.com" style={{ color: '#b8965a' }}>hello@virtualstagingIOM.com</a>
           </p>
         </div>
       </div>
@@ -216,3 +216,5 @@ function Accordion({ question, answer }: { question: string; answer: string }) {
     </div>
   )
 }
+
+
