@@ -25,12 +25,8 @@ interface SavedDesign {
 function BuyerDashboard() {
   return (
     <>
-      <SignedOut>
-        <RedirectToSignIn />
-      </SignedOut>
-      <SignedIn>
-        <BuyerDashboardContent />
-      </SignedIn>
+      <SignedOut><RedirectToSignIn /></SignedOut>
+      <SignedIn><BuyerDashboardContent /></SignedIn>
     </>
   )
 }
@@ -43,6 +39,18 @@ function BuyerDashboardContent() {
   const [activeSection, setActiveSection] = useState<'overview' | 'designs'>('overview')
 
   const firstName = user?.firstName || 'there'
+
+  // Plan + generation info from Clerk public metadata
+  const plan = (user?.publicMetadata?.plan as string) || 'free'
+  const planLabel = (user?.publicMetadata?.planLabel as string) || 'Free Trial'
+  const generationsRemaining = (user?.publicMetadata?.generationsRemaining as number) ?? 0
+  const generationsAllowance = (user?.publicMetadata?.generationsAllowance as number) ?? 0
+  const isPaid = plan === 'monthly' || plan === 'payg'
+
+  // Generation progress bar percentage
+  const usedPct = generationsAllowance > 0
+    ? Math.round(((generationsAllowance - generationsRemaining) / generationsAllowance) * 100)
+    : 0
 
   useEffect(() => {
     if (!user) return
@@ -78,7 +86,6 @@ function BuyerDashboardContent() {
 
   return (
     <div style={{ minHeight: 'calc(100vh - 72px)', background: S.surface }}>
-      {/* Header */}
       <div style={{ background: S.ink, padding: '48px', color: S.cream }}>
         <p style={{ fontSize: '11px', letterSpacing: '0.18em', textTransform: 'uppercase', color: S.gold, marginBottom: '12px' }}>My Account</p>
         <h1 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '40px', fontWeight: 300, marginBottom: '8px' }}>
@@ -86,7 +93,6 @@ function BuyerDashboardContent() {
         </h1>
         <p style={{ color: S.muted, fontSize: '14px', marginBottom: '32px' }}>Visualise your dream home before you buy</p>
 
-        {/* Tab nav */}
         <div style={{ display: 'flex', gap: '0', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
           {(['overview', 'designs'] as const).map(section => (
             <button
@@ -111,61 +117,103 @@ function BuyerDashboardContent() {
 
         {activeSection === 'overview' && (
           <>
-            {/* Plan status */}
-            <div style={{ background: S.white, borderRadius: '4px', padding: '32px', marginBottom: '32px', boxShadow: '0 2px 16px rgba(26,22,18,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div>
-                <p style={{ fontSize: '11px', letterSpacing: '0.12em', textTransform: 'uppercase', color: S.muted, marginBottom: '6px' }}>Current Plan</p>
-                <p style={{ fontSize: '20px', fontWeight: 500, color: S.ink, marginBottom: '4px' }}>Free Trial</p>
-                <p style={{ fontSize: '13px', color: S.muted }}>3 room redesigns remaining</p>
+            {/* Plan + generation status card */}
+            <div style={{ background: S.white, borderRadius: '4px', padding: '32px', marginBottom: '32px', boxShadow: '0 2px 16px rgba(26,22,18,0.06)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: isPaid ? '24px' : '0' }}>
+                <div>
+                  <p style={{ fontSize: '11px', letterSpacing: '0.12em', textTransform: 'uppercase', color: S.muted, marginBottom: '6px' }}>Current Plan</p>
+                  <p style={{ fontSize: '20px', fontWeight: 500, color: S.ink, marginBottom: '4px' }}>{planLabel}</p>
+                  <p style={{ fontSize: '13px', color: S.muted }}>
+                    {plan === 'free' && 'No active plan — purchase below to get started'}
+                    {plan === 'payg' && `${generationsRemaining} of 15 generations remaining`}
+                    {plan === 'monthly' && `${generationsRemaining} of 100 generations remaining this month`}
+                  </p>
+                </div>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  {(!isPaid || plan === 'payg') && (
+                    <button
+                      onClick={() => navigate({ to: '/checkout' })}
+                      style={{ background: S.gold, color: S.white, padding: '12px 28px', borderRadius: '2px', border: 'none', fontSize: '12px', fontWeight: 500, letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif" }}
+                    >
+                      {plan === 'payg' ? 'Top up / Go monthly' : 'Get started'}
+                    </button>
+                  )}
+                </div>
               </div>
-              <button style={{ background: S.gold, color: S.white, padding: '12px 28px', borderRadius: '2px', border: 'none', fontSize: '12px', fontWeight: 500, letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif" }}>
-                Upgrade Plan
-              </button>
+
+              {/* Generation progress bar — only shown on paid plans */}
+              {isPaid && generationsAllowance > 0 && (
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                    <span style={{ fontSize: '11px', color: S.muted, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Generations used</span>
+                    <span style={{ fontSize: '11px', color: generationsRemaining === 0 ? '#c0392b' : S.muted }}>
+                      {generationsAllowance - generationsRemaining} / {generationsAllowance}
+                    </span>
+                  </div>
+                  <div style={{ height: '6px', background: S.warm, borderRadius: '3px', overflow: 'hidden' }}>
+                    <div style={{
+                      height: '100%', borderRadius: '3px', transition: 'width 0.4s ease',
+                      width: `${usedPct}%`,
+                      background: usedPct >= 90 ? '#c0392b' : usedPct >= 70 ? '#e67e22' : S.gold,
+                    }} />
+                  </div>
+                  {generationsRemaining === 0 && (
+                    <p style={{ fontSize: '12px', color: '#c0392b', marginTop: '8px' }}>
+                      You've used all your generations.{' '}
+                      <button onClick={() => navigate({ to: '/checkout' })} style={{ background: 'none', border: 'none', color: '#c0392b', textDecoration: 'underline', cursor: 'pointer', fontSize: '12px', padding: 0 }}>
+                        Top up or upgrade
+                      </button>
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Quick actions */}
             <p style={{ fontSize: '11px', fontWeight: 500, letterSpacing: '0.16em', textTransform: 'uppercase', color: S.gold, marginBottom: '20px' }}>
               Quick Actions
-              <span style={{ display: 'inline-block', marginLeft: '12px', flex: 1, height: '1px', background: S.warm, verticalAlign: 'middle', width: '100px' }} />
+              <span style={{ display: 'inline-block', marginLeft: '12px', height: '1px', background: S.warm, verticalAlign: 'middle', width: '100px' }} />
             </p>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '20px', marginBottom: '48px' }}>
               <ActionCard
                 title="Redesign a Room"
-                desc="Upload photos and transform any room into your style"
-                cta="Start redesigning"
-                onClick={() => navigate({ to: '/tool' })}
+                desc={generationsRemaining > 0 ? `You have ${generationsRemaining} generation${generationsRemaining !== 1 ? 's' : ''} remaining` : 'Purchase a plan to start redesigning rooms'}
+                cta={generationsRemaining > 0 ? 'Start redesigning' : 'Get generations'}
+                onClick={() => generationsRemaining > 0 ? navigate({ to: '/tool' }) : navigate({ to: '/checkout' })}
               />
               <ActionCard
-                title="Pricing Plans"
-                desc="Unlock unlimited redesigns with a monthly subscription"
-                cta="View pricing"
-                onClick={() => {}}
+                title={plan === 'payg' ? 'Top Up' : 'Pricing Plans'}
+                desc={plan === 'payg' ? 'Running low? Buy another 15 generations or switch to monthly for 100/month.' : 'Get 15 generations for \u00a33.99 or 100/month for \u00a37.99'}
+                cta={plan === 'payg' ? 'Top up now' : 'View plans'}
+                onClick={() => navigate({ to: '/checkout' })}
               />
               <ActionCard
                 title="My Designs"
-                desc={designs.length > 0 ? `You have ${designs.length} saved design${designs.length !== 1 ? 's' : ''}` : "View and download your previously generated room designs"}
-                cta={designs.length > 0 ? `View ${designs.length} design${designs.length !== 1 ? 's' : ''}` : "No designs yet"}
+                desc={designs.length > 0 ? `You have ${designs.length} saved design${designs.length !== 1 ? 's' : ''}` : 'View and download your previously generated room designs'}
+                cta={designs.length > 0 ? `View ${designs.length} design${designs.length !== 1 ? 's' : ''}` : 'No designs yet'}
                 onClick={() => setActiveSection('designs')}
                 disabled={designs.length === 0}
               />
             </div>
 
             {/* Pricing plans */}
-            <p style={{ fontSize: '11px', fontWeight: 500, letterSpacing: '0.16em', textTransform: 'uppercase', color: S.gold, marginBottom: '20px' }}>Choose a Plan</p>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '16px' }}>
+            <p style={{ fontSize: '11px', fontWeight: 500, letterSpacing: '0.16em', textTransform: 'uppercase', color: S.gold, marginBottom: '20px' }}>Pricing</p>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '16px' }}>
               {[
-                { name: 'Pay As You Go', price: '£2.99', unit: 'per session', desc: '5 room redesigns per session. No commitment.', highlight: false },
-                { name: 'Monthly', price: '£9.99', unit: 'per month', desc: 'Unlimited redesigns. Cancel anytime.', highlight: true },
-                { name: 'Annual', price: '£79', unit: 'per year', desc: 'Best value. Save 34% vs monthly.', highlight: false },
-              ].map((plan) => (
-                <div key={plan.name} style={{ background: plan.highlight ? S.ink : S.white, borderRadius: '4px', padding: '28px 24px', border: `2px solid ${plan.highlight ? S.gold : S.warm}`, boxShadow: plan.highlight ? '0 8px 32px rgba(26,22,18,0.15)' : '0 2px 12px rgba(26,22,18,0.06)' }}>
-                  <p style={{ fontSize: '12px', fontWeight: 500, letterSpacing: '0.08em', textTransform: 'uppercase', color: plan.highlight ? S.gold : S.muted, marginBottom: '12px' }}>{plan.name}</p>
-                  <p style={{ fontSize: '32px', fontWeight: 300, fontFamily: "'Cormorant Garamond', serif", color: plan.highlight ? S.cream : S.ink }}>{plan.price}</p>
-                  <p style={{ fontSize: '12px', color: S.muted, marginBottom: '16px' }}>{plan.unit}</p>
-                  <p style={{ fontSize: '13px', color: plan.highlight ? 'rgba(245,240,232,0.6)' : S.muted, marginBottom: '24px', lineHeight: 1.5 }}>{plan.desc}</p>
-                  <button style={{ width: '100%', background: plan.highlight ? S.gold : 'transparent', color: plan.highlight ? S.white : S.gold, padding: '10px', borderRadius: '2px', border: `1px solid ${S.gold}`, fontSize: '12px', fontWeight: 500, letterSpacing: '0.08em', textTransform: 'uppercase', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif" }}>
-                    Choose plan
+                { name: 'Pay As You Go', price: '\u00a33.99', unit: 'one-off', desc: '15 photo generations. Top up anytime.', highlight: false },
+                { name: 'Monthly', price: '\u00a37.99', unit: 'per month', desc: '100 generations/month. Cancel anytime.', highlight: true },
+              ].map((p) => (
+                <div key={p.name} style={{ background: p.highlight ? S.ink : S.white, borderRadius: '4px', padding: '28px 24px', border: `2px solid ${p.highlight ? S.gold : S.warm}`, boxShadow: p.highlight ? '0 8px 32px rgba(26,22,18,0.15)' : '0 2px 12px rgba(26,22,18,0.06)' }}>
+                  <p style={{ fontSize: '12px', fontWeight: 500, letterSpacing: '0.08em', textTransform: 'uppercase', color: p.highlight ? S.gold : S.muted, marginBottom: '12px' }}>{p.name}</p>
+                  <p style={{ fontSize: '32px', fontWeight: 300, fontFamily: "'Cormorant Garamond', serif", color: p.highlight ? S.cream : S.ink }}>{p.price}</p>
+                  <p style={{ fontSize: '12px', color: S.muted, marginBottom: '16px' }}>{p.unit}</p>
+                  <p style={{ fontSize: '13px', color: p.highlight ? 'rgba(245,240,232,0.6)' : S.muted, marginBottom: '24px', lineHeight: 1.5 }}>{p.desc}</p>
+                  <button
+                    onClick={() => navigate({ to: '/checkout' })}
+                    style={{ width: '100%', background: p.highlight ? S.gold : 'transparent', color: p.highlight ? S.white : S.gold, padding: '10px', borderRadius: '2px', border: `1px solid ${S.gold}`, fontSize: '12px', fontWeight: 500, letterSpacing: '0.08em', textTransform: 'uppercase', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif" }}
+                  >
+                    {plan === 'payg' && !p.highlight ? 'Top up' : 'Choose plan'}
                   </button>
                 </div>
               ))}
@@ -194,12 +242,9 @@ function BuyerDashboardContent() {
               <div style={{ textAlign: 'center', padding: '80px 0', color: S.muted, fontSize: '14px' }}>Loading your designs...</div>
             ) : designs.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '80px 0', background: S.white, borderRadius: '4px', border: `1px dashed ${S.warm}` }}>
-                <p style={{ fontSize: '15px', color: S.ink, marginBottom: '8px', fontFamily: "'Cormorant Garamond', serif", fontWeight: 300, fontSize: '24px' }}>No designs saved yet</p>
+                <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '24px', fontWeight: 300, color: S.ink, marginBottom: '8px' }}>No designs saved yet</p>
                 <p style={{ fontSize: '13px', color: S.muted, marginBottom: '24px' }}>Generate a room redesign and click "Save to account" to keep it here.</p>
-                <button
-                  onClick={() => navigate({ to: '/tool' })}
-                  style={{ background: S.gold, color: S.white, padding: '12px 28px', borderRadius: '2px', border: 'none', fontSize: '12px', fontWeight: 500, letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif" }}
-                >
+                <button onClick={() => navigate({ to: '/tool' })} style={{ background: S.gold, color: S.white, padding: '12px 28px', borderRadius: '2px', border: 'none', fontSize: '12px', fontWeight: 500, letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif" }}>
                   Start redesigning
                 </button>
               </div>
