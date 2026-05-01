@@ -1,18 +1,33 @@
 import { createServerFn } from '@tanstack/react-start'
 import Stripe from 'stripe'
-import { clerkClient } from '@clerk/express'
-
-// Generation allowances per plan
-const PLAN_ALLOWANCES = {
-  payg: 15,
-  monthly: 100,
-  free: 0,
-}
 
 function getStripe() {
   return new Stripe(process.env.STRIPE_SECRET_KEY!, {
     apiVersion: '2024-11-20.acacia',
   })
+}
+
+// Helper: update Clerk user metadata via REST API
+async function updateClerkMetadata(userId: string, publicMetadata: Record<string, unknown>) {
+  const res = await fetch(`https://api.clerk.com/v1/users/${userId}/metadata`, {
+    method: 'PATCH',
+    headers: {
+      Authorization: `Bearer ${process.env.CLERK_SECRET_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ public_metadata: publicMetadata }),
+  })
+  if (!res.ok) throw new Error(`Clerk metadata update failed: ${res.status}`)
+  return res.json()
+}
+
+// Helper: get Clerk user via REST API
+async function getClerkUser(userId: string) {
+  const res = await fetch(`https://api.clerk.com/v1/users/${userId}`, {
+    headers: { Authorization: `Bearer ${process.env.CLERK_SECRET_KEY}` },
+  })
+  if (!res.ok) throw new Error(`Clerk user fetch failed: ${res.status}`)
+  return res.json()
 }
 
 // Create a Stripe Checkout session and return the URL
@@ -43,19 +58,17 @@ export const createCheckoutSessionFn = createServerFn(
   }
 )
 
-// Decrement a user's generation count by 1 — called each time an image is generated
+// Decrement a user's generation count by 1
 export const decrementGenerationsFn = createServerFn(
   'POST',
   async (data: { userId: string }) => {
-    const user = await clerkClient.users.getUser(data.userId)
-    const current = (user.publicMetadata?.generationsRemaining as number) ?? 0
+    const user = await getClerkUser(data.userId)
+    const current = (user.public_metadata?.generationsRemaining as number) ?? 0
     const updated = Math.max(0, current - 1)
 
-    await clerkClient.users.updateUserMetadata(data.userId, {
-      publicMetadata: {
-        ...user.publicMetadata,
-        generationsRemaining: updated,
-      },
+    await updateClerkMetadata(data.userId, {
+      ...user.public_metadata,
+      generationsRemaining: updated,
     })
 
     return { generationsRemaining: updated }
@@ -66,9 +79,9 @@ export const decrementGenerationsFn = createServerFn(
 export const getGenerationsFn = createServerFn(
   'GET',
   async (data: { userId: string }) => {
-    const user = await clerkClient.users.getUser(data.userId)
-    const generationsRemaining = (user.publicMetadata?.generationsRemaining as number) ?? 0
-    const plan = (user.publicMetadata?.plan as string) ?? 'free'
+    const user = await getClerkUser(data.userId)
+    const generationsRemaining = (user.public_metadata?.generationsRemaining as number) ?? 0
+    const plan = (user.public_metadata?.plan as string) ?? 'free'
     return { generationsRemaining, plan }
   }
-))
+)
