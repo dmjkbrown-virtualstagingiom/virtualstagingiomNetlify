@@ -3,7 +3,8 @@ import Stripe from 'stripe'
 
 function getStripe() {
   return new Stripe(process.env.STRIPE_SECRET_KEY!, {
-    apiVersion: '2024-11-20.acacia',
+    apiVersion: '2024-06-20',
+    timeout: 8000, // 8 second timeout, under Netlify's 10s function limit
   })
 }
 
@@ -39,22 +40,30 @@ export const createCheckoutSessionFn = createServerFn(
     userEmail: string
     mode: 'payment' | 'subscription'
   }) => {
+    if (!data.priceId) throw new Error('No price ID provided')
+    if (!process.env.STRIPE_SECRET_KEY) throw new Error('STRIPE_SECRET_KEY not set')
+
     const stripe = getStripe()
 
-    const session = await stripe.checkout.sessions.create({
-      mode: data.mode,
-      payment_method_types: ['card'],
-      line_items: [{ price: data.priceId, quantity: 1 }],
-      success_url: `https://virtualstagingiom.com/checkout-success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `https://virtualstagingiom.com/buyer-dashboard`,
-      customer_email: data.userEmail,
-      metadata: {
-        userId: data.userId,
-        priceId: data.priceId,
-      },
-    })
+    try {
+      const session = await stripe.checkout.sessions.create({
+        mode: data.mode,
+        payment_method_types: ['card'],
+        line_items: [{ price: data.priceId, quantity: 1 }],
+        success_url: `https://virtualstagingiom.com/checkout-success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `https://virtualstagingiom.com/buyer-dashboard`,
+        customer_email: data.userEmail,
+        metadata: {
+          userId: data.userId,
+          priceId: data.priceId,
+        },
+      })
 
-    return { url: session.url }
+      return { url: session.url, error: null }
+    } catch (err: any) {
+      console.error('Stripe checkout error:', err.message)
+      throw new Error(err.message)
+    }
   }
 )
 
