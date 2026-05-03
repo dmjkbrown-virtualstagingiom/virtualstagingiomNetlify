@@ -70,9 +70,13 @@ function CheckoutContent() {
       })
       if (result.url) {
         window.location.href = result.url
+      } else {
+        setError('No checkout URL returned. Please try again.')
+        setLoadingPlan(null)
       }
     } catch (err: any) {
-      setError('Could not start checkout. Please try again.')
+      console.error('Checkout error:', err)
+      setError(err?.message || 'Could not start checkout. Please try again.')
       setLoadingPlan(null)
     }
   }
