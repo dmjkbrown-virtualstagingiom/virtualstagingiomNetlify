@@ -12,42 +12,32 @@ interface SavedDesign {
 export const saveDesignFn = createServerFn(
   'POST',
   async (data: { userId: string; design: SavedDesign }) => {
-    console.log('saveDesignFn called for userId:', data.userId, 'design:', data.design.id)
-    const store = getStore('designs')
-
-    // Fetch and store the image permanently in Netlify Blobs
-    // so it doesn't expire when the Replicate URL does
-    let permanentUrl = data.design.afterUrl
+    console.log('saveDesignFn called for userId:', data.userId)
+    
     try {
-      const imgResponse = await fetch(data.design.afterUrl)
-      if (imgResponse.ok) {
-        const imgBuffer = await imgResponse.arrayBuffer()
-        const imgStore = getStore('saved-images')
-        const imageKey = `${data.userId}/${data.design.id}.jpg`
-        await imgStore.set(imageKey, imgBuffer, {
-          metadata: { contentType: 'image/jpeg' }
-        })
-        // Keep original URL as fallback — stored images served via Netlify Blobs API
-        permanentUrl = data.design.afterUrl
+      const store = getStore({ name: 'designs', consistency: 'strong' })
+      const key = `user-${data.userId}`
+
+      let designs: SavedDesign[] = []
+      try {
+        const existing = await store.get(key, { type: 'json' })
+        if (Array.isArray(existing)) designs = existing
+        console.log('Existing designs found:', designs.length)
+      } catch {
+        console.log('No existing designs, starting fresh')
+        designs = []
       }
-    } catch (imgErr) {
-      console.error('Failed to cache image, using original URL:', imgErr)
+
+      designs.unshift(data.design)
+      if (designs.length > 50) designs = designs.slice(0, 50)
+
+      await store.setJSON(key, designs)
+      console.log('Saved designs successfully, total:', designs.length)
+      return { ok: true, count: designs.length }
+    } catch (err: any) {
+      console.error('saveDesignFn error:', err.message)
+      throw new Error(`Failed to save design: ${err.message}`)
     }
-
-    let designs: SavedDesign[] = []
-    try {
-      const existing = await store.get(data.userId, { type: 'json' })
-      if (Array.isArray(existing)) designs = existing
-    } catch {
-      designs = []
-    }
-
-    const designToSave = { ...data.design, afterUrl: permanentUrl }
-    designs.unshift(designToSave)
-    if (designs.length > 50) designs = designs.slice(0, 50)
-
-    await store.setJSON(data.userId, designs)
-    return { ok: true }
   }
 )
 
@@ -55,13 +45,16 @@ export const getDesignsFn = createServerFn(
   'GET',
   async (data: { userId: string }) => {
     console.log('getDesignsFn called for userId:', data.userId)
-    const store = getStore('designs')
+    
     try {
-      const designs = await store.get(data.userId, { type: 'json' })
-      console.log('getDesignsFn result:', Array.isArray(designs) ? designs.length : 'not array', designs)
+      const store = getStore({ name: 'designs', consistency: 'strong' })
+      const key = `user-${data.userId}`
+      
+      const designs = await store.get(key, { type: 'json' })
+      console.log('getDesignsFn result type:', typeof designs, 'isArray:', Array.isArray(designs))
       return { designs: Array.isArray(designs) ? designs : [] }
-    } catch (err) {
-      console.error('getDesignsFn error:', err)
+    } catch (err: any) {
+      console.error('getDesignsFn error:', err.message)
       return { designs: [] }
     }
   }
@@ -70,16 +63,27 @@ export const getDesignsFn = createServerFn(
 export const deleteDesignFn = createServerFn(
   'POST',
   async (data: { userId: string; designId: string }) => {
-    const store = getStore('designs')
-    let designs: SavedDesign[] = []
+    console.log('deleteDesignFn called for userId:', data.userId, 'designId:', data.designId)
+    
     try {
-      const existing = await store.get(data.userId, { type: 'json' })
-      if (Array.isArray(existing)) designs = existing
-    } catch {
+      const store = getStore({ name: 'designs', consistency: 'strong' })
+      const key = `user-${data.userId}`
+
+      let designs: SavedDesign[] = []
+      try {
+        const existing = await store.get(key, { type: 'json' })
+        if (Array.isArray(existing)) designs = existing
+      } catch {
+        return { ok: true }
+      }
+
+      const updated = designs.filter((d: SavedDesign) => d.id !== data.designId)
+      await store.setJSON(key, updated)
+      console.log('Deleted design, remaining:', updated.length)
       return { ok: true }
+    } catch (err: any) {
+      console.error('deleteDesignFn error:', err.message)
+      throw new Error(`Failed to delete design: ${err.message}`)
     }
-    const updated = designs.filter((d: SavedDesign) => d.id !== data.designId)
-    await store.setJSON(data.userId, updated)
-    return { ok: true }
   }
 )
