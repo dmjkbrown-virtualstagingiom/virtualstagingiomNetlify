@@ -42,6 +42,11 @@ function SignUpPage() {
         unsafeMetadata: {
           userType,
           agencyName: userType === 'agent' ? agencyName : undefined,
+          // Give home owners 3 free generations on sign-up
+          generationsRemaining: userType === 'buyer' ? 3 : 0,
+          generationsAllowance: userType === 'buyer' ? 3 : 0,
+          plan: 'free',
+          planLabel: 'Free Trial',
         },
       })
       await signUp.prepareEmailAddressVerification({ strategy: 'email_code' })
@@ -63,11 +68,7 @@ function SignUpPage() {
       const result = await signUp.attemptEmailAddressVerification({ code })
       if (result.status === 'complete') {
         await setActive({ session: result.createdSessionId })
-        // Read userType from unsafeMetadata on the result as a fallback
-        const resolvedUserType =
-          userType ??
-          (result as any).unsafeMetadata?.userType ??
-          'buyer'
+        const resolvedUserType = userType ?? (result as any).unsafeMetadata?.userType ?? 'buyer'
         navigate({ to: resolvedUserType === 'agent' ? '/agent-dashboard' : '/buyer-dashboard' })
       } else {
         setError('Verification incomplete — please try again.')
@@ -91,8 +92,8 @@ function SignUpPage() {
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '32px' }}>
               {[
-                { type: 'buyer' as const, title: 'Home Buyer', desc: 'Visualise rooms in your dream style before you buy', price: 'From £2.99 per session' },
-                { type: 'agent' as const, title: 'Estate Agent', desc: 'Embed AI staging on your property listings', price: 'From £49/month' },
+                { type: 'buyer' as const, title: 'Home Owner', desc: 'Visualise rooms in your style before you buy or redecorate', price: '3 free generations included' },
+                { type: 'agent' as const, title: 'Estate Agent', desc: 'Embed AI staging on your property listings', price: 'From \u00a33.99 per session' },
               ].map(({ type, title, desc, price }) => (
                 <div
                   key={type}
@@ -126,7 +127,7 @@ function SignUpPage() {
           <>
             <button onClick={() => setStep('type')} style={{ background: 'transparent', border: 'none', color: S.muted, cursor: 'pointer', fontSize: '13px', marginBottom: '24px', padding: 0, fontFamily: "'DM Sans', sans-serif" }}>Back</button>
             <h1 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '36px', fontWeight: 300, color: S.ink, marginBottom: '8px' }}>
-              {userType === 'agent' ? 'Agent account' : 'Buyer account'}
+              {userType === 'agent' ? 'Agent account' : 'Home Owner account'}
             </h1>
             <p style={{ fontSize: '14px', color: S.muted, marginBottom: '32px' }}>Enter your details to get started</p>
 
@@ -141,12 +142,15 @@ function SignUpPage() {
                   <input value={lastName} onChange={(e) => setLastName(e.target.value)} required style={inputStyle} placeholder="Smith" />
                 </div>
               </div>
+
+              {/* Agency name only shown for estate agents */}
               {userType === 'agent' && (
                 <div>
                   <label style={labelStyle}>Agency name</label>
                   <input value={agencyName} onChange={(e) => setAgencyName(e.target.value)} required style={inputStyle} placeholder="Smith & Co Estate Agents" />
                 </div>
               )}
+
               <div>
                 <label style={labelStyle}>Email address</label>
                 <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required style={inputStyle} placeholder="jane@example.com" />
@@ -155,8 +159,14 @@ function SignUpPage() {
                 <label style={labelStyle}>Password</label>
                 <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required style={inputStyle} placeholder="At least 8 characters" />
               </div>
+
+              {userType === 'buyer' && (
+                <div style={{ padding: '12px 14px', background: '#f0f7f0', border: '1px solid #b8d4b8', borderRadius: '2px', fontSize: '13px', color: '#2d5a2d' }}>
+                  \u2713 Includes 3 free AI image generations to get you started
+                </div>
+              )}
+
               {error && <p style={{ fontSize: '13px', color: '#c0392b', padding: '10px 14px', background: '#fef0ef', borderRadius: '2px' }}>{error}</p>}
-              {/* Required by Clerk bot protection — do not remove */}
               <div id="clerk-captcha" />
               <button type="submit" disabled={loading} style={{ background: S.gold, color: S.white, padding: '14px', borderRadius: '2px', border: 'none', fontSize: '13px', fontWeight: 500, letterSpacing: '0.1em', textTransform: 'uppercase', cursor: loading ? 'wait' : 'pointer', fontFamily: "'DM Sans', sans-serif", marginTop: '8px' }}>
                 {loading ? 'Creating account...' : 'Create account'}
