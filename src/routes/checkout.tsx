@@ -2,7 +2,6 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
 import React from 'react'
 import { useUser, SignedIn, SignedOut, RedirectToSignIn } from '@clerk/clerk-react'
-import { createCheckoutSessionFn } from '../server/stripe.functions'
 
 export const Route = createFileRoute('/checkout')({
   component: CheckoutPage,
@@ -13,6 +12,12 @@ const S = {
   gold: '#b8965a', goldLight: '#d4b07a', muted: '#8a7f72',
   surface: '#faf7f2', white: '#ffffff',
 } as const
+
+// ─── PASTE YOUR STRIPE PAYMENT LINK URLs HERE ───────────────────────────────
+// Get these from Stripe Dashboard → Payment Links → copy the URL
+const PAYG_PAYMENT_LINK = import.meta.env.VITE_STRIPE_PAYG_LINK || ''
+const MONTHLY_PAYMENT_LINK = import.meta.env.VITE_STRIPE_MONTHLY_LINK || ''
+// ────────────────────────────────────────────────────────────────────────────
 
 const PLANS = [
   {
@@ -48,37 +53,25 @@ function CheckoutPage() {
 
 function CheckoutContent() {
   const { user } = useUser()
-  const navigate = useNavigate()
-  const [loadingPlan, setLoadingPlan] = useState<string | null>(null)
   const [error, setError] = useState('')
 
-  const handleCheckout = async (plan: typeof PLANS[0]) => {
+  const handleCheckout = (plan: typeof PLANS[0]) => {
     if (!user) return
-    setLoadingPlan(plan.id)
     setError('')
 
-    const priceId = plan.id === 'payg'
-      ? import.meta.env.VITE_STRIPE_PRICE_PAYG
-      : import.meta.env.VITE_STRIPE_PRICE_MONTHLY
+    const url = plan.id === 'payg' ? PAYG_PAYMENT_LINK : MONTHLY_PAYMENT_LINK
 
-    try {
-      const result = await createCheckoutSessionFn({
-        priceId,
-        userId: user.id,
-        userEmail: user.primaryEmailAddress?.emailAddress ?? '',
-        mode: plan.mode,
-      })
-      if (result.url) {
-        window.location.href = result.url
-      } else {
-        setError('No checkout URL returned. Please try again.')
-        setLoadingPlan(null)
-      }
-    } catch (err: any) {
-      console.error('Checkout error:', err)
-      setError(err?.message || 'Could not start checkout. Please try again.')
-      setLoadingPlan(null)
+    if (!url) {
+      setError('Payment link not configured. Please contact support.')
+      return
     }
+
+    // Append the user's email and Clerk ID as query params so the webhook can identify them
+    const paymentUrl = new URL(url)
+    paymentUrl.searchParams.set('prefilled_email', user.primaryEmailAddress?.emailAddress ?? '')
+    paymentUrl.searchParams.set('client_reference_id', user.id)
+
+    window.location.href = paymentUrl.toString()
   }
 
   return (
@@ -148,20 +141,19 @@ function CheckoutContent() {
 
               <button
                 onClick={() => handleCheckout(plan)}
-                disabled={loadingPlan !== null}
+                disabled={!user}
                 style={{
                   width: '100%', padding: '14px',
                   background: plan.highlight ? S.gold : 'transparent',
                   color: plan.highlight ? S.white : S.gold,
                   border: `1.5px solid ${S.gold}`, borderRadius: '2px',
                   fontSize: '13px', fontWeight: 500, letterSpacing: '0.1em', textTransform: 'uppercase',
-                  cursor: loadingPlan !== null ? 'wait' : 'pointer',
+                  cursor: !user ? 'wait' : 'pointer',
                   fontFamily: "'DM Sans', sans-serif",
-                  opacity: loadingPlan !== null && loadingPlan !== plan.id ? 0.5 : 1,
                   transition: 'all 0.2s',
                 }}
               >
-                {loadingPlan === plan.id ? 'Redirecting to Stripe...' : `Get ${plan.name}`}
+                {!user ? 'Loading...' : `Get ${plan.name}`}
               </button>
             </div>
           ))}
