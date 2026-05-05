@@ -54,6 +54,7 @@ interface PhotoEntry {
   url: string;
   roomTypeId: string | null;
   afterUrl?: string;
+  generationError?: string;
 }
 
 interface SavedDesign {
@@ -169,10 +170,15 @@ function BuyerTool() {
         updated[i] = { ...updated[i], afterUrl: result.generatedImageUrl };
         // Decrement generation count after each successful generation
         if (user) {
-          await decrementGenerationsFn({ userId: user.id }).catch(console.error);
+          try {
+            await decrementGenerationsFn({ userId: user.id });
+          } catch (decrementErr) {
+            console.error('Failed to decrement generations:', decrementErr);
+          }
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error("Generation failed for", photo.id, err);
+        updated[i] = { ...updated[i], afterUrl: undefined, generationError: err?.message || 'Generation failed' };
       }
       setGeneratedCount(i + 1);
     }
