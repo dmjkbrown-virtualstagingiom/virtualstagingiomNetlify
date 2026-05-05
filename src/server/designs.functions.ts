@@ -12,6 +12,7 @@ interface SavedDesign {
 export const saveDesignFn = createServerFn(
   'POST',
   async (data: { userId: string; design: SavedDesign }) => {
+    console.log('saveDesignFn called for userId:', data.userId, 'design:', data.design.id)
     const store = getStore('designs')
 
     // Fetch and store the image permanently in Netlify Blobs
@@ -53,11 +54,14 @@ export const saveDesignFn = createServerFn(
 export const getDesignsFn = createServerFn(
   'GET',
   async (data: { userId: string }) => {
+    console.log('getDesignsFn called for userId:', data.userId)
     const store = getStore('designs')
     try {
       const designs = await store.get(data.userId, { type: 'json' })
+      console.log('getDesignsFn result:', Array.isArray(designs) ? designs.length : 'not array', designs)
       return { designs: Array.isArray(designs) ? designs : [] }
-    } catch {
+    } catch (err) {
+      console.error('getDesignsFn error:', err)
       return { designs: [] }
     }
   }
