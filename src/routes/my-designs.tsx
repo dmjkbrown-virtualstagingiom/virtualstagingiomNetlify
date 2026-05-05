@@ -56,7 +56,11 @@ function MyDesignsContent() {
   async function deleteDesign(designId: string) {
     if (!user) return
     setDesigns(prev => prev.filter(d => d.id !== designId))
-    await deleteDesignFn({ userId: user.id, designId }).catch(console.error)
+    try {
+      await deleteDesignFn({ userId: user.id, designId })
+    } catch (err) {
+      console.error('Failed to delete design:', err)
+    }
   }
 
   async function downloadImage(url: string, filename: string) {
