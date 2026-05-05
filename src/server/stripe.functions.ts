@@ -46,6 +46,13 @@ export const createCheckoutSessionFn = createServerFn(
     const stripe = getStripe()
 
     try {
+      console.log('Creating Stripe session with:', {
+        priceId: data.priceId,
+        mode: data.mode,
+        email: data.userEmail,
+        userId: data.userId,
+      })
+
       const session = await stripe.checkout.sessions.create({
         mode: data.mode,
         payment_method_types: ['card'],
@@ -59,6 +66,13 @@ export const createCheckoutSessionFn = createServerFn(
         },
       })
 
+      console.log('Stripe session created:', {
+        id: session.id,
+        url: session.url,
+        status: session.status,
+        paymentStatus: session.payment_status,
+      })
+
       return { url: session.url, error: null }
     } catch (err: any) {
       console.error('Stripe checkout error:', err.message)
@@ -68,19 +82,37 @@ export const createCheckoutSessionFn = createServerFn(
 )
 
 // Decrement a user's generation count by 1
+// Checks publicMetadata first (paid users), falls back to unsafeMetadata (free tier)
 export const decrementGenerationsFn = createServerFn(
   'POST',
   async (data: { userId: string }) => {
     const user = await getClerkUser(data.userId)
-    const current = (user.public_metadata?.generationsRemaining as number) ?? 0
-    const updated = Math.max(0, current - 1)
+    const isPaidUser = user.public_metadata?.plan && user.public_metadata.plan !== 'free'
 
-    await updateClerkMetadata(data.userId, {
-      ...user.public_metadata,
-      generationsRemaining: updated,
-    })
-
-    return { generationsRemaining: updated }
+    if (isPaidUser) {
+      // Paid user — update publicMetadata
+      const current = (user.public_metadata?.generationsRemaining as number) ?? 0
+      const updated = Math.max(0, current - 1)
+      await updateClerkMetadata(data.userId, {
+        ...user.public_metadata,
+        generationsRemaining: updated,
+      })
+      return { generationsRemaining: updated }
+    } else {
+      // Free tier user — update unsafeMetadata via Clerk API
+      const current = (user.unsafe_metadata?.generationsRemaining as number) ?? 0
+      const updated = Math.max(0, current - 1)
+      const res = await fetch(`https://api.clerk.com/v1/users/${data.userId}/metadata`, {
+        method: 'PATCH',
+        headers: {
+          Authorization: `Bearer ${process.env.CLERK_SECRET_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ unsafe_metadata: { ...user.unsafe_metadata, generationsRemaining: updated } }),
+      })
+      if (!res.ok) console.error('Failed to update free tier generations')
+      return { generationsRemaining: updated }
+    }
   }
 )
 
