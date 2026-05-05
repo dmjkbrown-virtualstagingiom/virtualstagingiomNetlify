@@ -85,8 +85,15 @@ async function downloadImage(url: string, filename: string) {
 }
 
 function BuyerTool() {
-  const { user } = useUser();
+  const { user, isLoaded } = useUser();
   const navigate = useNavigate();
+
+  // Redirect to sign-up if not authenticated
+  React.useEffect(() => {
+    if (isLoaded && !user) {
+      navigate({ to: '/sign-up' })
+    }
+  }, [isLoaded, user])
   // Check both publicMetadata (set by webhook after payment) and unsafeMetadata (set at sign-up for free tier)
   const generationsRemaining = (user?.publicMetadata?.generationsRemaining as number) ?? (user?.unsafeMetadata?.generationsRemaining as number) ?? 0;
   const plan = (user?.publicMetadata?.plan as string) ?? (user?.unsafeMetadata?.plan as string) ?? "free";
