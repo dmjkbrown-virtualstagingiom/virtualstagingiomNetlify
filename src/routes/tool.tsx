@@ -86,8 +86,9 @@ async function downloadImage(url: string, filename: string) {
 function BuyerTool() {
   const { user } = useUser();
   const navigate = useNavigate();
-  const generationsRemaining = (user?.publicMetadata?.generationsRemaining as number) ?? 0;
-  const plan = (user?.publicMetadata?.plan as string) ?? "free";
+  // Check both publicMetadata (set by webhook after payment) and unsafeMetadata (set at sign-up for free tier)
+  const generationsRemaining = (user?.publicMetadata?.generationsRemaining as number) ?? (user?.unsafeMetadata?.generationsRemaining as number) ?? 0;
+  const plan = (user?.publicMetadata?.plan as string) ?? (user?.unsafeMetadata?.plan as string) ?? "free";
   const hasGenerations = generationsRemaining > 0;
   const [stage, setStage] = useState<Stage>("upload");
   const [photos, setPhotos] = useState<PhotoEntry[]>([]);
