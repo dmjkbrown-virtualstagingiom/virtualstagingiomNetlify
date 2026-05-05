@@ -14,6 +14,25 @@ export const saveDesignFn = createServerFn(
   async (data: { userId: string; design: SavedDesign }) => {
     const store = getStore('designs')
 
+    // Fetch and store the image permanently in Netlify Blobs
+    // so it doesn't expire when the Replicate URL does
+    let permanentUrl = data.design.afterUrl
+    try {
+      const imgResponse = await fetch(data.design.afterUrl)
+      if (imgResponse.ok) {
+        const imgBuffer = await imgResponse.arrayBuffer()
+        const imgStore = getStore('saved-images')
+        const imageKey = `${data.userId}/${data.design.id}.jpg`
+        await imgStore.set(imageKey, imgBuffer, {
+          metadata: { contentType: 'image/jpeg' }
+        })
+        // Keep original URL as fallback — stored images served via Netlify Blobs API
+        permanentUrl = data.design.afterUrl
+      }
+    } catch (imgErr) {
+      console.error('Failed to cache image, using original URL:', imgErr)
+    }
+
     let designs: SavedDesign[] = []
     try {
       const existing = await store.get(data.userId, { type: 'json' })
@@ -22,7 +41,8 @@ export const saveDesignFn = createServerFn(
       designs = []
     }
 
-    designs.unshift(data.design)
+    const designToSave = { ...data.design, afterUrl: permanentUrl }
+    designs.unshift(designToSave)
     if (designs.length > 50) designs = designs.slice(0, 50)
 
     await store.setJSON(data.userId, designs)
