@@ -202,6 +202,11 @@ function BuyerTool() {
 
   const handleSaveDesign = async (photo: PhotoEntry) => {
     if (!user || !photo.afterUrl) return;
+    // Only save if it's a real URL (not a local blob URL which expires)
+    if (photo.afterUrl.startsWith('blob:')) {
+      alert('Cannot save this image — please generate a new one and try again.');
+      return;
+    }
     const roomLabel = ROOM_TYPES.find(r => r.id === photo.roomTypeId)?.label || "Room";
     const styleName = STYLES.find(s => s.id === selectedStyle)?.label || "";
 
@@ -215,11 +220,13 @@ function BuyerTool() {
     };
     try {
       await saveDesignFn({ userId: user.id, design });
+      setSavedIds(prev => new Set(prev).add(photo.id));
     } catch (err) {
       console.error("Failed to save design:", err);
+      alert("Failed to save design. Please try again.");
+    } finally {
+      setSavingIds(prev => { const s = new Set(prev); s.delete(photo.id); return s; });
     }
-    setSavingIds(prev => { const s = new Set(prev); s.delete(photo.id); return s; });
-    setSavedIds(prev => new Set(prev).add(photo.id));
   };
 
   const styleName = STYLES.find(s => s.id === selectedStyle)?.label || "";
@@ -500,7 +507,7 @@ function BuyerTool() {
                               disabled={isSaved || isSaving}
                               style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", background: isSaved ? S.warm : "transparent", border: `1px solid ${isSaved ? S.warm : S.muted}`, color: isSaved ? S.muted : S.muted, padding: "7px 12px", borderRadius: "2px", fontSize: "11px", fontWeight: 500, cursor: isSaved ? "default" : "pointer", fontFamily: "'DM Sans', sans-serif", letterSpacing: "0.06em" }}
                             >
-                              {isSaving ? "Saving..." : isSaved ? "✓ Saved" : "Save to account"}
+                              {isSaving ? "Saving..." : isSaved ? "✓ Saved to My Designs" : "Save to My Designs"}
                             </button>
                           )}
                         </div>
