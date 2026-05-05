@@ -170,8 +170,10 @@ function BuyerTool() {
         updated[i] = { ...updated[i], afterUrl: result.generatedImageUrl };
         // Decrement generation count after each successful generation
         if (user) {
+          console.log('Decrementing generations for userId:', user.id, 'remaining before:', generationsRemaining);
           try {
             await decrementGenerationsFn({ userId: user.id });
+            console.log('Decrement successful');
           } catch (decrementErr) {
             console.error('Failed to decrement generations:', decrementErr);
           }
@@ -208,6 +210,7 @@ function BuyerTool() {
 
   const handleSaveDesign = async (photo: PhotoEntry) => {
     if (!user || !photo.afterUrl) return;
+    console.log('Attempting save for userId:', user.id, 'afterUrl:', photo.afterUrl?.substring(0, 60));
     // Only save if it's a real URL (not a local blob URL which expires)
     if (photo.afterUrl.startsWith('blob:')) {
       alert('Cannot save this image — please generate a new one and try again.');
