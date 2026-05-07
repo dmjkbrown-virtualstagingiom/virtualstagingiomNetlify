@@ -1,5 +1,16 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useState, useEffect } from 'react'
+
+function useIsMobile() {
+  const [isMobile, setIsMobile] = React.useState(false)
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
+  return isMobile
+}
 import React from 'react'
 import { useUser, useClerk, SignedIn, SignedOut, RedirectToSignIn } from '@clerk/clerk-react'
 
@@ -25,6 +36,7 @@ function MyAccount() {
 function MyAccountContent() {
   const { user } = useUser()
   const { signOut } = useClerk()
+  const isMobile = useIsMobile()
   const navigate = useNavigate()
   const [cancelling, setCancelling] = useState(false)
   const [cancelConfirm, setCancelConfirm] = useState(false)
@@ -55,20 +67,20 @@ function MyAccountContent() {
 
   return (
     <div style={{ minHeight: 'calc(100vh - 72px)', background: S.surface }}>
-      <div style={{ background: S.ink, padding: '48px', color: S.cream }}>
+      <div style={{ background: S.ink, padding: isMobile ? '32px 20px' : '48px', color: S.cream }}>
         <p style={{ fontSize: '11px', letterSpacing: '0.18em', textTransform: 'uppercase', color: S.gold, marginBottom: '12px' }}>Account</p>
-        <h1 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '40px', fontWeight: 300, marginBottom: '8px' }}>
+        <h1 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: isMobile ? '28px' : '40px', fontWeight: 300, marginBottom: '8px' }}>
           My <em style={{ color: S.goldLight }}>Account</em>
         </h1>
         <p style={{ color: S.muted, fontSize: '14px' }}>Manage your personal details, plan and usage</p>
       </div>
 
-      <main style={{ maxWidth: '800px', margin: '0 auto', padding: '56px 48px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      <main style={{ maxWidth: '800px', margin: '0 auto', padding: isMobile ? '24px 16px' : '56px 48px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
 
         {/* Personal details */}
         <section style={{ background: S.white, borderRadius: '4px', padding: '32px', boxShadow: '0 2px 16px rgba(26,22,18,0.06)' }}>
           <p style={sectionLabel}>Personal Details</p>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '16px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
             <div>
               <p style={fieldLabel}>First name</p>
               <p style={fieldValue}>{user?.firstName || '—'}</p>
