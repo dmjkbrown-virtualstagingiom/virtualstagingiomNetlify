@@ -104,12 +104,7 @@ function BuyerTool() {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
-  // Redirect to sign-up if not authenticated
-  React.useEffect(() => {
-    if (isLoaded && !user) {
-      navigate({ to: '/sign-up' })
-    }
-  }, [isLoaded, user])
+  // Show landing if not authenticated (handled in render below)
   // Check both publicMetadata (set by webhook after payment) and unsafeMetadata (set at sign-up for free tier)
   const generationsRemaining = (user?.publicMetadata?.generationsRemaining as number) ?? (user?.unsafeMetadata?.generationsRemaining as number) ?? 0;
   const plan = (user?.publicMetadata?.plan as string) ?? (user?.unsafeMetadata?.plan as string) ?? "free";
@@ -263,6 +258,11 @@ function BuyerTool() {
 
   const styleName = STYLES.find(s => s.id === selectedStyle)?.label || "";
   const stageIndex = { upload: 0, label: 1, style: 2, generating: 2, results: 3 }[stage];
+
+  // Show landing page for unauthenticated users
+  if (isLoaded && !user) {
+    return <ToolLanding />
+  }
 
   return (
     <div style={{ minHeight: "calc(100vh - 72px)", background: S.surface }}>
@@ -576,6 +576,64 @@ function BuyerTool() {
       </main>
     </div>
   );
+}
+
+function ToolLanding() {
+  const isMobile = useIsMobile()
+  const [showAfter, setShowAfter] = React.useState(false)
+
+  React.useEffect(() => {
+    const interval = setInterval(() => setShowAfter(prev => !prev), 3000)
+    return () => clearInterval(interval)
+  }, [])
+
+  return (
+    <div style={{ minHeight: "calc(100vh - 72px)", background: "#1a1612", color: "#f5f0e8" }}>
+      <div style={{ maxWidth: "1100px", margin: "0 auto", padding: isMobile ? "48px 20px" : "80px 48px", display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: isMobile ? "40px" : "64px", alignItems: "center" }}>
+
+        {/* Text */}
+        <div>
+          <p style={{ fontSize: "11px", letterSpacing: "0.2em", textTransform: "uppercase", color: "#b8965a", marginBottom: "16px", fontWeight: 500 }}>Home Owner Tool</p>
+          <h1 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: isMobile ? "36px" : "52px", fontWeight: 300, lineHeight: 1.1, marginBottom: "24px" }}>
+            See your home <em style={{ color: "#b8965a" }}>reimagined</em> before you commit
+          </h1>
+          <p style={{ fontSize: "15px", color: "rgba(245,240,232,0.7)", lineHeight: 1.8, marginBottom: "16px" }}>
+            Upload photos of any room and watch AI transform them into your dream interior style — in under a minute.
+          </p>
+          <p style={{ fontSize: "13px", color: "#8a7f72", lineHeight: 1.7, marginBottom: "40px" }}>
+            Create a free account to get started. You'll receive 3 free AI generations — no credit card required.
+          </p>
+          <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
+            <a href="/sign-up?homeOwnerOnly=true" style={{ background: "#b8965a", color: "#fff", padding: "14px 32px", borderRadius: "2px", fontSize: "13px", fontWeight: 500, letterSpacing: "0.1em", textTransform: "uppercase", textDecoration: "none", fontFamily: "'DM Sans', sans-serif" }}>
+              Create free account
+            </a>
+            <a href="/sign-in" style={{ background: "transparent", color: "#f5f0e8", padding: "14px 32px", borderRadius: "2px", border: "1px solid rgba(245,240,232,0.25)", fontSize: "13px", fontWeight: 500, letterSpacing: "0.1em", textTransform: "uppercase", textDecoration: "none", fontFamily: "'DM Sans', sans-serif" }}>
+              Sign in
+            </a>
+          </div>
+          <p style={{ fontSize: "12px", color: "#8a7f72", marginTop: "16px" }}>✓ 3 free AI generations &nbsp;·&nbsp; No credit card required</p>
+        </div>
+
+        {/* Before/after */}
+        <div>
+          <div style={{ position: "relative", borderRadius: "4px", overflow: "hidden", boxShadow: "0 24px 64px rgba(0,0,0,0.4)" }}>
+            <img src="/Before.png" alt="Before" style={{ width: "100%", display: "block", aspectRatio: "4/3", objectFit: "cover", position: showAfter ? "absolute" : "relative", top: 0, left: 0, opacity: showAfter ? 0 : 1, transition: "opacity 0.8s ease" }} />
+            <img src="/After.png" alt="After" style={{ width: "100%", display: "block", aspectRatio: "4/3", objectFit: "cover", position: showAfter ? "relative" : "absolute", top: 0, left: 0, opacity: showAfter ? 1 : 0, transition: "opacity 0.8s ease" }} />
+            <div style={{ position: "absolute", top: "12px", left: "12px", background: "rgba(26,22,18,0.8)", color: "#f5f0e8", fontSize: "11px", fontWeight: 500, letterSpacing: "0.12em", textTransform: "uppercase", padding: "5px 12px", borderRadius: "2px" }}>
+              {showAfter ? "After — Japandi Style" : "Before"}
+            </div>
+          </div>
+          <div style={{ display: "flex", gap: "8px", marginTop: "12px" }}>
+            {[{ label: "Before", active: !showAfter }, { label: "After", active: showAfter }].map(({ label, active }) => (
+              <button key={label} onClick={() => setShowAfter(label === "After")} style={{ flex: 1, padding: "8px", background: active ? "rgba(184,150,90,0.2)" : "transparent", border: `1px solid ${active ? "#b8965a" : "rgba(255,255,255,0.15)"}`, color: active ? "#b8965a" : "rgba(245,240,232,0.4)", borderRadius: "2px", fontSize: "12px", fontWeight: 500, letterSpacing: "0.08em", textTransform: "uppercase", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", transition: "all 0.2s" }}>
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
 }
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
