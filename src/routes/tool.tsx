@@ -1,4 +1,15 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+
+function useIsMobile() {
+  const [isMobile, setIsMobile] = React.useState(false);
+  React.useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+  return isMobile;
+}
 import { useState, useRef, useCallback } from "react";
 import React from "react";
 import { useUser } from "@clerk/clerk-react";
@@ -87,6 +98,7 @@ async function downloadImage(url: string, filename: string) {
 function BuyerTool() {
   const { user, isLoaded } = useUser();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
   // Redirect to sign-up if not authenticated
   React.useEffect(() => {
@@ -250,10 +262,10 @@ function BuyerTool() {
 
   return (
     <div style={{ minHeight: "calc(100vh - 72px)", background: S.surface }}>
-      <div style={{ background: S.ink, padding: "56px 48px 64px", color: S.cream, position: "relative", overflow: "hidden" }}>
+      <div style={{ background: S.ink, padding: isMobile ? "32px 20px 48px" : "56px 48px 64px", color: S.cream, position: "relative", overflow: "hidden" }}>
         <div style={{ position: "absolute", bottom: "-60px", right: "-40px", width: "360px", height: "360px", background: "radial-gradient(circle, rgba(184,150,90,0.12) 0%, transparent 70%)", pointerEvents: "none" }} />
         <p style={{ fontSize: "11px", letterSpacing: "0.18em", textTransform: "uppercase", color: S.gold, fontWeight: 500, marginBottom: "16px" }}>Buyer Tool</p>
-        <h1 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "clamp(32px, 4vw, 52px)", fontWeight: 300, lineHeight: 1.05, maxWidth: "580px", marginBottom: "16px" }}>
+        <h1 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: isMobile ? "28px" : "clamp(32px, 4vw, 52px)", fontWeight: 300, lineHeight: 1.05, maxWidth: "580px", marginBottom: "16px" }}>
           Reimagine this home <em style={{ fontStyle: "italic", color: S.goldLight }}>in your style</em>
         </h1>
         <p style={{ color: S.muted, fontSize: "15px", maxWidth: "440px", lineHeight: 1.7, fontWeight: 300 }}>
@@ -271,7 +283,7 @@ function BuyerTool() {
         </div>
       </div>
 
-      <main style={{ maxWidth: "960px", margin: "0 auto", padding: "56px 48px" }}>
+      <main style={{ maxWidth: "960px", margin: "0 auto", padding: isMobile ? "24px 16px" : "56px 48px" }}>
 
         {stage === "upload" && (
           <>
@@ -287,7 +299,7 @@ function BuyerTool() {
                 onDragOver={e => { e.preventDefault(); setDragging(true); }}
                 onDragLeave={() => setDragging(false)}
                 onDrop={e => { e.preventDefault(); setDragging(false); processFiles(e.dataTransfer.files); }}
-                style={{ border: `2px dashed ${dragging ? S.gold : S.warm}`, borderRadius: "4px", padding: "48px 32px", textAlign: "center", cursor: "pointer", background: dragging ? "#fdf5e8" : S.white, transition: "all 0.2s", marginBottom: "32px", position: "relative" }}
+                style={{ border: `2px dashed ${dragging ? S.gold : S.warm}`, borderRadius: "4px", padding: isMobile ? "32px 16px" : "48px 32px", textAlign: "center", cursor: "pointer", background: dragging ? "#fdf5e8" : S.white, transition: "all 0.2s", marginBottom: "32px", position: "relative" }}
               >
                 <input
                   ref={fileInputRef}
@@ -304,7 +316,7 @@ function BuyerTool() {
             )}
 
             {photos.length > 0 && (
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: "16px", marginBottom: "48px" }}>
+              <div style={{ display: "grid", gridTemplateColumns: isMobile ? "repeat(2, 1fr)" : "repeat(auto-fill, minmax(160px, 1fr))", gap: "12px", marginBottom: "32px" }}>
                 {photos.map(photo => (
                   <div key={photo.id} style={{ position: "relative", borderRadius: "2px", overflow: "hidden", boxShadow: "0 2px 12px rgba(26,22,18,0.10)" }}>
                     <img src={photo.url} alt="Room" style={{ width: "100%", aspectRatio: "4/3", objectFit: "cover", display: "block" }} />
@@ -338,7 +350,7 @@ function BuyerTool() {
             <p style={{ fontSize: "13px", color: S.muted, marginBottom: "32px" }}>
               Select the room type for each photo. {photos.filter(p => p.roomTypeId).length} of {photos.length} labelled.
             </p>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: "24px", marginBottom: "48px" }}>
+            <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(auto-fill, minmax(260px, 1fr))", gap: "16px", marginBottom: "32px" }}>
               {photos.map((photo, idx) => (
                 <div key={photo.id} style={{ background: S.white, borderRadius: "2px", overflow: "hidden", boxShadow: "0 2px 12px rgba(26,22,18,0.08)" }}>
                   <div style={{ position: "relative" }}>
@@ -350,7 +362,7 @@ function BuyerTool() {
                   </div>
                   <div style={{ padding: "14px 16px" }}>
                     <p style={{ fontSize: "11px", color: S.muted, marginBottom: "10px", letterSpacing: "0.06em", textTransform: "uppercase" }}>Room type</p>
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+                    <div style={{ display: "flex", flexWrap: "wrap", flexDirection: isMobile ? "column" : "row", gap: "6px" }}>
                       {ROOM_TYPES.map(rt => (
                         <button
                           key={rt.id}
@@ -416,7 +428,7 @@ function BuyerTool() {
                 )}
               </div>
             )}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "16px", marginBottom: "48px" }}>
+            <div style={{ display: "grid", gridTemplateColumns: isMobile ? "repeat(2, 1fr)" : "repeat(auto-fill, minmax(180px, 1fr))", gap: "12px", marginBottom: "32px" }}>
               {STYLES.map(style => (
                 <div key={style.id} onClick={() => setSelectedStyle(style.id)} style={{ cursor: "pointer", borderRadius: "2px", overflow: "hidden", border: `3px solid ${selectedStyle === style.id ? S.gold : "transparent"}`, transition: "all 0.2s ease", background: S.white, boxShadow: "0 4px 24px rgba(26,22,18,0.08)", transform: selectedStyle === style.id ? "translateY(-2px)" : "none" }}>
                   <div style={{ height: "100px", background: style.gradient, position: "relative" }}>
@@ -461,7 +473,7 @@ function BuyerTool() {
               </div>
               <button onClick={reset} style={{ background: "transparent", border: `1px solid ${S.warm}`, color: S.ink, padding: "8px 20px", borderRadius: "2px", fontSize: "12px", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", letterSpacing: "0.06em" }}>Start over</button>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "20px" }}>
+            <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(auto-fill, minmax(280px, 1fr))", gap: "16px" }}>
               {photos.map(photo => {
                 const roomLabel = ROOM_TYPES.find(r => r.id === photo.roomTypeId)?.label || "Room";
                 const isBefore = showBefore[photo.id];
@@ -535,12 +547,12 @@ function BuyerTool() {
             </div>
 
             {/* Bottom CTA bar */}
-            <div style={{ marginTop: "48px", padding: "32px", background: S.ink, borderRadius: "2px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: "24px", flexWrap: "wrap" }}>
+            <div style={{ marginTop: "48px", padding: "32px", background: S.ink, borderRadius: "2px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: "24px", flexWrap: "wrap", flexDirection: isMobile ? "column" : "row" }}>
               <div>
                 <p style={{ color: S.cream, fontSize: "15px", fontWeight: 400, marginBottom: "4px" }}>Love what you see?</p>
                 <p style={{ color: S.muted, fontSize: "13px" }}>Your photos are still loaded — pick a new style without re-uploading.</p>
               </div>
-              <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
+              <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", flexDirection: isMobile ? "column" : "row" }}>
                 <button
                   onClick={tryAnotherStyle}
                   style={{ background: S.gold, color: S.white, padding: "10px 24px", borderRadius: "2px", fontSize: "12px", fontWeight: 500, cursor: "pointer", fontFamily: "'DM Sans', sans-serif", letterSpacing: "0.08em", textTransform: "uppercase", border: "none" }}
