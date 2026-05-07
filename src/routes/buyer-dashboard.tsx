@@ -52,6 +52,13 @@ function BuyerDashboardContent() {
 
   const firstName = user?.firstName || 'there'
 
+  // Redirect agents who land on buyer dashboard to their correct dashboard
+  React.useEffect(() => {
+    if (user && userType === 'agent') {
+      navigate({ to: '/agent-dashboard' })
+    }
+  }, [user, userType])
+
   // Plan + generation info from Clerk public metadata
   const plan = (user?.publicMetadata?.plan as string) || 'free'
   const planLabel = (user?.publicMetadata?.planLabel as string) || 'Free Trial'
