@@ -49,6 +49,16 @@ function RootDocument({ children }: { children: React.ReactNode }) {
           {children}
           <Scripts />
         </ClerkProvider>
+        {/* Hidden form for Netlify form detection */}
+        <form name="estate-agent-enquiry" data-netlify="true" hidden>
+          <input type="text" name="name" />
+          <input type="text" name="agency" />
+          <input type="email" name="email" />
+          <input type="tel" name="phone" />
+          <input type="text" name="website" />
+          <input type="text" name="listings-count" />
+          <textarea name="message" />
+        </form>
       </body>
     </html>
   )
@@ -81,14 +91,14 @@ function SiteNav() {
       { to: '/my-designs', label: 'My Designs' },
     ] : []),
     ...(isAgent ? [
-      { to: '/embed-demo', label: 'Embed Demo' },
+      { to: '/estate-agent-tool', label: 'Estate Agent Tool' },
     ] : []),
     { to: '/faq', label: 'FAQ' },
     { to: dashboardPath, label: 'Dashboard' },
     { to: '/my-account', label: 'My Account' },
   ] : [
     { to: '/tool', label: 'Home Owner Tool' },
-    { to: '/embed-demo', label: 'Embed Demo' },
+    { to: '/estate-agent-tool', label: 'Estate Agent Tool' },
     { to: '/faq', label: 'FAQ' },
   ]
 
