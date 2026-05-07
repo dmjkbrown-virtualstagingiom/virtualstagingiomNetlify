@@ -1,10 +1,22 @@
 import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { ClerkProvider, SignedIn, SignedOut, useUser, useClerk } from '@clerk/clerk-react'
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import '../styles.css'
 
 const CLERK_PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY
+
+// Responsive hook
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false)
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
+  return isMobile
+}
 
 export const Route = createRootRoute({
   head: () => ({
@@ -46,6 +58,8 @@ function SiteNav() {
   const { user, isLoaded } = useUser()
   const { signOut } = useClerk()
   const navigate = useNavigate()
+  const isMobile = useIsMobile()
+  const [menuOpen, setMenuOpen] = useState(false)
 
   const userType = user?.unsafeMetadata?.userType as string | undefined
   const isAgent = userType === 'agent'
@@ -54,100 +68,131 @@ function SiteNav() {
 
   const handleSignOut = async () => {
     await signOut()
-    navigate({ to: '/' })
+    setMenuOpen(false)
+    navigate({ to: '/sign-up' })
   }
 
+  const closeMenu = () => setMenuOpen(false)
+
+  // Nav links based on user type
+  const navLinks = isLoaded && user ? [
+    ...(isHomeOwner ? [
+      { to: '/tool', label: 'Home Owner Tool' },
+      { to: '/my-designs', label: 'My Designs' },
+    ] : []),
+    ...(isAgent ? [
+      { to: '/embed-demo', label: 'Embed Demo' },
+    ] : []),
+    { to: '/faq', label: 'FAQ' },
+    { to: dashboardPath, label: 'Dashboard' },
+    { to: '/my-account', label: 'My Account' },
+  ] : [
+    { to: '/tool', label: 'Home Owner Tool' },
+    { to: '/embed-demo', label: 'Embed Demo' },
+    { to: '/faq', label: 'FAQ' },
+  ]
+
   return (
-    <header style={{
-      background: '#1a1612',
-      padding: '0 48px',
-      height: '72px',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      position: 'sticky',
-      top: 0,
-      zIndex: 100,
-    }}>
-      <Link to="/" style={{ textDecoration: 'none' }}>
-        <span style={{
-          fontFamily: "'Cormorant Garamond', serif",
-          fontSize: '26px',
-          fontWeight: 300,
-          color: '#f5f0e8',
-          letterSpacing: '0.04em',
+    <>
+      <header style={{
+        background: '#1a1612',
+        padding: isMobile ? '0 20px' : '0 48px',
+        height: '72px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        position: 'sticky',
+        top: 0,
+        zIndex: 200,
+      }}>
+        {/* Logo */}
+        <Link to="/" style={{ textDecoration: 'none' }} onClick={closeMenu}>
+          <span style={{
+            fontFamily: "'Cormorant Garamond', serif",
+            fontSize: isMobile ? '20px' : '26px',
+            fontWeight: 300,
+            color: '#f5f0e8',
+            letterSpacing: '0.04em',
+          }}>
+            Virtual Staging<span style={{ color: '#b8965a', fontStyle: 'italic' }}> IOM</span>
+          </span>
+        </Link>
+
+        {/* Desktop nav */}
+        {!isMobile && (
+          <nav style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
+            {navLinks.map(({ to, label }) => (
+              <Link key={to} to={to as any} style={navLinkStyle} activeProps={{ style: { color: '#b8965a' } }}>
+                {label}
+              </Link>
+            ))}
+            {isLoaded && user ? (
+              <button onClick={handleSignOut} style={signOutStyle}>Sign Out</button>
+            ) : isLoaded ? (
+              <>
+                <Link to="/sign-in" style={navLinkStyle}>Sign In</Link>
+                <Link to="/sign-up" style={getStartedStyle}>Get Started</Link>
+              </>
+            ) : null}
+          </nav>
+        )}
+
+        {/* Mobile hamburger */}
+        {isMobile && (
+          <button
+            onClick={() => setMenuOpen(o => !o)}
+            style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '8px', display: 'flex', flexDirection: 'column', gap: '5px' }}
+            aria-label="Toggle menu"
+          >
+            <span style={{ display: 'block', width: '24px', height: '2px', background: menuOpen ? '#b8965a' : '#f5f0e8', transition: 'all 0.2s', transform: menuOpen ? 'rotate(45deg) translate(5px, 5px)' : 'none' }} />
+            <span style={{ display: 'block', width: '24px', height: '2px', background: '#f5f0e8', transition: 'all 0.2s', opacity: menuOpen ? 0 : 1 }} />
+            <span style={{ display: 'block', width: '24px', height: '2px', background: menuOpen ? '#b8965a' : '#f5f0e8', transition: 'all 0.2s', transform: menuOpen ? 'rotate(-45deg) translate(5px, -5px)' : 'none' }} />
+          </button>
+        )}
+      </header>
+
+      {/* Mobile drawer */}
+      {isMobile && menuOpen && (
+        <div style={{
+          position: 'fixed', top: '72px', left: 0, right: 0, bottom: 0,
+          background: '#1a1612', zIndex: 199, overflowY: 'auto',
+          display: 'flex', flexDirection: 'column', padding: '24px 24px 48px',
         }}>
-          Virtual Staging<span style={{ color: '#b8965a', fontStyle: 'italic' }}> IOM</span>
-        </span>
-      </Link>
-
-      <nav style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
-
-        {/* Nav links for signed-out users */}
-        <SignedOut>
-          {[
-            { to: '/tool' as const, label: 'Home Owner Tool' },
-            { to: '/embed-demo' as const, label: 'Embed Demo' },
-            { to: '/faq' as const, label: 'FAQ' },
-          ].map(({ to, label }) => (
-            <Link key={to} to={to} style={navLinkStyle} activeProps={{ style: { color: '#b8965a' } }}>
+          {navLinks.map(({ to, label }) => (
+            <Link
+              key={to}
+              to={to as any}
+              onClick={closeMenu}
+              style={{
+                color: 'rgba(245,240,232,0.8)', textDecoration: 'none',
+                fontSize: '18px', fontWeight: 300, letterSpacing: '0.04em',
+                padding: '16px 0', borderBottom: '1px solid rgba(255,255,255,0.08)',
+                fontFamily: "'Cormorant Garamond', serif",
+              }}
+            >
               {label}
             </Link>
           ))}
-        </SignedOut>
 
-        {/* Nav links for signed-in users — filtered by user type */}
-        {isLoaded && user && (
-          <>
-            {/* Home Owner sees: Home Owner Tool, My Designs, FAQ */}
-            {isHomeOwner && (
+          <div style={{ marginTop: '32px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {isLoaded && user ? (
+              <button onClick={handleSignOut} style={{ ...signOutStyle, padding: '14px', fontSize: '13px', borderRadius: '2px' }}>
+                Sign Out
+              </button>
+            ) : isLoaded ? (
               <>
-                <Link to="/tool" style={navLinkStyle} activeProps={{ style: { color: '#b8965a' } }}>
-                  Home Owner Tool
+                <Link to="/sign-in" onClick={closeMenu} style={{ ...getStartedStyle, textAlign: 'center', padding: '14px', borderRadius: '2px' }}>
+                  Sign In
                 </Link>
-                <Link to="/my-designs" style={navLinkStyle} activeProps={{ style: { color: '#b8965a' } }}>
-                  My Designs
-                </Link>
-                <Link to="/faq" style={navLinkStyle} activeProps={{ style: { color: '#b8965a' } }}>
-                  FAQ
+                <Link to="/sign-up" onClick={closeMenu} style={{ ...getStartedStyle, textAlign: 'center', padding: '14px', borderRadius: '2px', background: '#b8965a' }}>
+                  Get Started
                 </Link>
               </>
-            )}
-
-            {/* Estate Agent sees: Embed Demo, FAQ */}
-            {isAgent && (
-              <>
-                <Link to="/embed-demo" style={navLinkStyle} activeProps={{ style: { color: '#b8965a' } }}>
-                  Embed Demo
-                </Link>
-                <Link to="/faq" style={navLinkStyle} activeProps={{ style: { color: '#b8965a' } }}>
-                  FAQ
-                </Link>
-              </>
-            )}
-
-            {/* Shared signed-in links */}
-            <Link to={dashboardPath as any} style={navLinkStyle} activeProps={{ style: { color: '#b8965a' } }}>
-              Dashboard
-            </Link>
-            <Link to="/my-account" style={navLinkStyle} activeProps={{ style: { color: '#b8965a' } }}>
-              My Account
-            </Link>
-            <button onClick={handleSignOut} style={signOutStyle}>
-              Sign Out
-            </button>
-          </>
-        )}
-
-        {/* Sign in / Get Started for signed-out users */}
-        {isLoaded && !user && (
-          <>
-            <Link to="/sign-in" style={navLinkStyle}>Sign In</Link>
-            <Link to="/sign-up" style={getStartedStyle}>Get Started</Link>
-          </>
-        )}
-      </nav>
-    </header>
+            ) : null}
+          </div>
+        </div>
+      )}
+    </>
   )
 }
 
