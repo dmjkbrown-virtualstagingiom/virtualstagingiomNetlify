@@ -5,6 +5,9 @@ import { useSignUp } from '@clerk/clerk-react'
 
 export const Route = createFileRoute('/sign-up')({
   component: SignUpPage,
+  validateSearch: (search: Record<string, unknown>) => ({
+    homeOwnerOnly: search.homeOwnerOnly === 'true',
+  }),
 })
 
 const S = {
@@ -16,8 +19,12 @@ const S = {
 function SignUpPage() {
   const { signUp, setActive } = useSignUp()
   const navigate = useNavigate()
-  const [userType, setUserType] = useState<'buyer' | 'agent' | null>(null)
-  const [step, setStep] = useState<'type' | 'details' | 'verify'>('type')
+  const { homeOwnerOnly } = Route.useSearch()
+  // If homeOwnerOnly, pre-select buyer and skip type selection
+  const [userType, setUserType] = useState<'buyer' | 'agent' | null>(homeOwnerOnly ? 'buyer' : null)
+  const [step, setStepRaw] = useState<'type' | 'details' | 'verify'>(homeOwnerOnly ? 'details' : 'type')
+  const setStep = setStepRaw
+
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [firstName, setFirstName] = useState('')
