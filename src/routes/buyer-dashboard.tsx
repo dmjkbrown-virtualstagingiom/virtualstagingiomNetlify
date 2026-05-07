@@ -57,7 +57,7 @@ function BuyerDashboardContent() {
     const load = async () => {
     setLoadingDesigns(true)
     try {
-      const data = await getDesignsFn({ userId: user.id })
+      const data = await getDesignsFn({ data: { userId: user.id } })
       setDesigns(data.designs || [])
     } catch {
       setDesigns([])
@@ -72,7 +72,7 @@ function BuyerDashboardContent() {
     if (!user) return
     setDesigns(prev => prev.filter(d => d.id !== designId))
     try {
-      await deleteDesignFn({ userId: user.id, designId })
+      await deleteDesignFn({ data: { userId: user.id, designId } })
     } catch (err) {
       console.error('Failed to delete design:', err)
     }
