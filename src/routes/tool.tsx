@@ -47,16 +47,16 @@ const ROOM_TYPES = [
 ];
 
 const STYLES = [
-  { id: "coastal", label: "Coastal", desc: "Sea blues, natural linen, driftwood tones", gradient: "linear-gradient(135deg, #d4eaf5 0%, #a8d4e8 50%, #7ab8d2 100%)" },
-  { id: "modernluxury", label: "Luxury Modern", desc: "Sleek, high-end, sophisticated", gradient: "linear-gradient(135deg, #e8e4dc 0%, #c8c0b0 50%, #a09080 100%)" },
-  { id: "japandi", label: "Japandi", desc: "Warm wabi-sabi calm, organic forms", gradient: "linear-gradient(135deg, #e8e0d5 0%, #c8bfb0 50%, #a09285 100%)" },
-  { id: "scandinavian", label: "Scandinavian", desc: "Clean lines, natural wood, muted palettes", gradient: "linear-gradient(135deg, #f0ede6 0%, #e4ddd3 50%, #d8cfc2 100%)" },
-  { id: "modernfarmhouse", label: "Modern Farmhouse", desc: "Warm whites, shiplap, rustic warmth", gradient: "linear-gradient(135deg, #f0ebe0 0%, #ddd0b8 50%, #c8b898 100%)" },
-  { id: "urbanmasculine", label: "Urban Masculine", desc: "Dark tones, raw steel, industrial luxe", gradient: "linear-gradient(135deg, #3d3933 0%, #5a5650 50%, #2d2b28 100%)" },
-  { id: "biophilic", label: "Biophilic Design", desc: "Living walls, greenery, natural materials", gradient: "linear-gradient(135deg, #2d4a2a 0%, #4a7a45 50%, #88b880 100%)" },
-  { id: "maximalist", label: "Maximalist", desc: "Bold colour, rich textures, layered patterns", gradient: "linear-gradient(135deg, #4a2d6b 0%, #7a4a95 50%, #d4a03a 100%)" },
-  { id: "minimalist", label: "Minimalist", desc: "Ultra-clean lines, zero clutter, monochromatic", gradient: "linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 50%, #d0d0d0 100%)" },
-  { id: "whites", label: "Whites", desc: "Layered whites, bouclé textures, bleached wood", gradient: "linear-gradient(135deg, #ffffff 0%, #f5f0ea 50%, #ede8e0 100%)" },
+  { id: "coastal", label: "Coastal", desc: "Sea blues, natural linen, driftwood tones", image: "/style-coastal.png" },
+  { id: "modernluxury", label: "Luxury Modern", desc: "Sleek, high-end, sophisticated", image: "/style-modernluxury.png" },
+  { id: "japandi", label: "Japandi", desc: "Warm wabi-sabi calm, organic forms", image: "/style-japandi.png" },
+  { id: "scandinavian", label: "Scandinavian", desc: "Clean lines, natural wood, muted palettes", image: "/style-scandinavian.png" },
+  { id: "modernfarmhouse", label: "Modern Farmhouse", desc: "Warm whites, shiplap, rustic warmth", image: "/style-modernfarmhouse.png" },
+  { id: "urbanmasculine", label: "Urban Masculine", desc: "Dark tones, raw steel, industrial luxe", image: "/style-urbanmasculine.png" },
+  { id: "biophilic", label: "Biophilic Design", desc: "Living walls, greenery, natural materials", image: "/style-biophilic.png" },
+  { id: "maximalist", label: "Maximalist", desc: "Bold colour, rich textures, layered patterns", image: "/style-maximalist.png" },
+  { id: "minimalist", label: "Minimalist", desc: "Ultra-clean lines, zero clutter, monochromatic", image: "/style-minimalist.png" },
+  { id: "whites", label: "Whites", desc: "Layered whites, bouclé textures, bleached wood", image: "/style-whites.png" },
 ];
 
 const MAX_PHOTOS = 5;
@@ -432,10 +432,11 @@ function BuyerTool() {
                 )}
               </div>
             )}
-            <div style={{ display: "grid", gridTemplateColumns: isMobile ? "repeat(2, 1fr)" : "repeat(auto-fill, minmax(180px, 1fr))", gap: "12px", marginBottom: "32px" }}>
+            <div style={{ display: "grid", gridTemplateColumns: isMobile ? "repeat(2, 1fr)" : "repeat(5, 1fr)", gap: "12px", marginBottom: "32px" }}>
               {STYLES.map(style => (
                 <div key={style.id} onClick={() => setSelectedStyle(style.id)} style={{ cursor: "pointer", borderRadius: "2px", overflow: "hidden", border: `3px solid ${selectedStyle === style.id ? S.gold : "transparent"}`, transition: "all 0.2s ease", background: S.white, boxShadow: "0 4px 24px rgba(26,22,18,0.08)", transform: selectedStyle === style.id ? "translateY(-2px)" : "none" }}>
-                  <div style={{ height: "100px", background: style.gradient, position: "relative" }}>
+                  <div style={{ height: "120px", position: "relative", overflow: "hidden" }}>
+                    <img src={style.image} alt={style.label} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
                     {selectedStyle === style.id && <div style={{ position: "absolute", top: "8px", right: "8px", width: "24px", height: "24px", background: S.gold, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}><CheckIcon /></div>}
                   </div>
                   <div style={{ padding: "12px 14px 14px" }}>
