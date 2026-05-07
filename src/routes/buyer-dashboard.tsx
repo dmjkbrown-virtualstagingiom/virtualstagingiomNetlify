@@ -1,6 +1,17 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useState, useEffect } from 'react'
 import React from 'react'
+
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false)
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
+  return isMobile
+}
 import { useUser, SignedIn, SignedOut, RedirectToSignIn } from '@clerk/clerk-react'
 import { getDesignsFn, deleteDesignFn } from '../server/designs.functions'
 
@@ -34,6 +45,7 @@ function BuyerDashboard() {
 function BuyerDashboardContent() {
   const { user } = useUser()
   const navigate = useNavigate()
+  const isMobile = useIsMobile()
   const [designs, setDesigns] = useState<SavedDesign[]>([])
   const [loadingDesigns, setLoadingDesigns] = useState(true)
   const [activeSection, setActiveSection] = useState<'overview' | 'designs'>('overview')
@@ -97,9 +109,9 @@ function BuyerDashboardContent() {
 
   return (
     <div style={{ minHeight: 'calc(100vh - 72px)', background: S.surface }}>
-      <div style={{ background: S.ink, padding: '48px', color: S.cream }}>
+      <div style={{ background: S.ink, padding: isMobile ? '32px 20px' : '48px', color: S.cream }}>
         <p style={{ fontSize: '11px', letterSpacing: '0.18em', textTransform: 'uppercase', color: S.gold, marginBottom: '12px' }}>My Account</p>
-        <h1 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '40px', fontWeight: 300, marginBottom: '8px' }}>
+        <h1 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: isMobile ? '28px' : '40px', fontWeight: 300, marginBottom: '8px' }}>
           Welcome back, <em style={{ color: S.goldLight }}>{firstName}</em>
         </h1>
         <p style={{ color: S.muted, fontSize: '14px', marginBottom: '32px' }}>Visualise your dream home before you buy</p>
@@ -124,13 +136,13 @@ function BuyerDashboardContent() {
         </div>
       </div>
 
-      <main style={{ maxWidth: '960px', margin: '0 auto', padding: '56px 48px' }}>
+      <main style={{ maxWidth: '960px', margin: '0 auto', padding: isMobile ? '32px 20px' : '56px 48px' }}>
 
         {activeSection === 'overview' && (
           <>
             {/* Plan + generation status card */}
             <div style={{ background: S.white, borderRadius: '4px', padding: '32px', marginBottom: '32px', boxShadow: '0 2px 16px rgba(26,22,18,0.06)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: isPaid ? '24px' : '0' }}>
+              <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', alignItems: isMobile ? 'flex-start' : 'flex-start', gap: '16px', marginBottom: isPaid ? '24px' : '0' }}>
                 <div>
                   <p style={{ fontSize: '11px', letterSpacing: '0.12em', textTransform: 'uppercase', color: S.muted, marginBottom: '6px' }}>Current Plan</p>
                   <p style={{ fontSize: '20px', fontWeight: 500, color: S.ink, marginBottom: '4px' }}>{planLabel}</p>
@@ -186,7 +198,7 @@ function BuyerDashboardContent() {
               <span style={{ display: 'inline-block', marginLeft: '12px', height: '1px', background: S.warm, verticalAlign: 'middle', width: '100px' }} />
             </p>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '20px', marginBottom: '48px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(260px, 1fr))', gap: '16px', marginBottom: '48px' }}>
               <ActionCard
                 title="Redesign a Room"
                 desc={generationsRemaining > 0 ? `You have ${generationsRemaining} generation${generationsRemaining !== 1 ? 's' : ''} remaining` : 'Purchase a plan to start redesigning rooms'}
@@ -210,7 +222,7 @@ function BuyerDashboardContent() {
 
             {/* Pricing plans */}
             <p style={{ fontSize: '11px', fontWeight: 500, letterSpacing: '0.16em', textTransform: 'uppercase', color: S.gold, marginBottom: '20px' }}>Pricing</p>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '16px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(220px, 1fr))', gap: '16px' }}>
               {[
                 { name: 'Pay As You Go', price: '\u00a33.99', unit: 'one-off', desc: '15 photo generations. Top up anytime.', highlight: false },
                 { name: 'Monthly', price: '\u00a37.99', unit: 'per month', desc: '100 generations/month. Cancel anytime.', highlight: true },
@@ -260,7 +272,7 @@ function BuyerDashboardContent() {
                 </button>
               </div>
             ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
                 {designs.map(design => (
                   <div key={design.id} style={{ background: S.white, borderRadius: '2px', overflow: 'hidden', boxShadow: '0 4px 24px rgba(26,22,18,0.08)' }}>
                     <div style={{ position: 'relative', aspectRatio: '4/3' }}>
