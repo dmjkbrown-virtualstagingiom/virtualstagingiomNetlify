@@ -47,8 +47,9 @@ function SignInPage() {
       const result = await signIn.create({ identifier: email, password })
       if (result.status === 'complete') {
         await setActive({ session: result.createdSessionId })
-        const userType = (result as any).userData?.publicMetadata?.userType as string | undefined
-        navigate({ to: userType === 'agent' ? '/agent-dashboard' : '/buyer-dashboard' })
+        // Navigate to dashboard — user type checked after session is active
+        // Default to buyer-dashboard; __root.tsx will handle agent redirect if needed
+        navigate({ to: '/buyer-dashboard' })
       }
     } catch (err: any) {
       setError(err.errors?.[0]?.message || 'Invalid email or password')
