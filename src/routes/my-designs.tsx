@@ -1,5 +1,16 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useState, useEffect } from 'react'
+
+function useIsMobile() {
+  const [isMobile, setIsMobile] = React.useState(false)
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
+  return isMobile
+}
 import React from 'react'
 import { useUser, SignedIn, SignedOut, RedirectToSignIn } from '@clerk/clerk-react'
 import { getDesignsFn, deleteDesignFn } from '../server/designs.functions'
@@ -34,6 +45,7 @@ function MyDesigns() {
 function MyDesignsContent() {
   const { user } = useUser()
   const navigate = useNavigate()
+  const isMobile = useIsMobile()
   const [designs, setDesigns] = useState<SavedDesign[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -82,15 +94,15 @@ function MyDesignsContent() {
 
   return (
     <div style={{ minHeight: 'calc(100vh - 72px)', background: S.surface }}>
-      <div style={{ background: S.ink, padding: '48px', color: S.cream }}>
+      <div style={{ background: S.ink, padding: isMobile ? '32px 20px' : '48px', color: S.cream }}>
         <p style={{ fontSize: '11px', letterSpacing: '0.18em', textTransform: 'uppercase', color: S.gold, marginBottom: '12px' }}>My Designs</p>
-        <h1 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '40px', fontWeight: 300, marginBottom: '8px' }}>
+        <h1 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: isMobile ? '28px' : '40px', fontWeight: 300, marginBottom: '8px' }}>
           Your <em style={{ color: S.goldLight }}>reimagined rooms</em>
         </h1>
         <p style={{ color: S.muted, fontSize: '14px' }}>All the AI-generated room designs you've saved</p>
       </div>
 
-      <main style={{ maxWidth: '960px', margin: '0 auto', padding: '56px 48px' }}>
+      <main style={{ maxWidth: '960px', margin: '0 auto', padding: isMobile ? '24px 16px' : '56px 48px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
           <p style={{ fontSize: '13px', color: S.muted }}>
             {loading ? 'Loading...' : `${designs.length} saved design${designs.length !== 1 ? 's' : ''}`}
@@ -117,7 +129,7 @@ function MyDesignsContent() {
             </button>
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
             {designs.map(design => (
               <div key={design.id} style={{ background: S.white, borderRadius: '2px', overflow: 'hidden', boxShadow: '0 4px 24px rgba(26,22,18,0.08)' }}>
                 <div style={{ position: 'relative', aspectRatio: '4/3' }}>
