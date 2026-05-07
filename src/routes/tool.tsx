@@ -179,7 +179,7 @@ function BuyerTool() {
         if (user) {
           console.log('Decrementing generations for userId:', user.id, 'remaining before:', generationsRemaining);
           try {
-            await decrementGenerationsFn({ userId: user.id });
+            await decrementGenerationsFn({ data: { userId: user.id } });
             console.log('Decrement successful');
           } catch (decrementErr) {
             console.error('Failed to decrement generations:', decrementErr);
@@ -235,7 +235,7 @@ function BuyerTool() {
       savedAt: new Date().toISOString(),
     };
     try {
-      await saveDesignFn({ userId: user.id, design });
+      await saveDesignFn({ data: { userId: user.id, design } });
       setSavedIds(prev => new Set(prev).add(photo.id));
     } catch (err) {
       console.error("Failed to save design:", err);
