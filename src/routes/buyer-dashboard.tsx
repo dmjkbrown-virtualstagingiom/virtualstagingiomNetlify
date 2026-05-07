@@ -51,6 +51,7 @@ function BuyerDashboardContent() {
   const [activeSection, setActiveSection] = useState<'overview' | 'designs'>('overview')
 
   const firstName = user?.firstName || 'there'
+  const userType = user?.unsafeMetadata?.userType as string | undefined
 
   // Redirect agents who land on buyer dashboard to their correct dashboard
   React.useEffect(() => {
