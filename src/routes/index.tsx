@@ -124,7 +124,7 @@ function Home() {
 
             {/* Before image */}
             <img
-              src="/before.png"
+              src="/Before.png"
               alt="Room before redesign"
               style={{
                 width: '100%', display: 'block',
@@ -138,7 +138,7 @@ function Home() {
 
             {/* After image */}
             <img
-              src="/after.png"
+              src="/After.png"
               alt="Room after Japandi redesign"
               style={{
                 width: '100%', display: 'block',
