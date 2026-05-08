@@ -174,9 +174,13 @@ function MyAccountContent() {
               {plan === 'payg' && (
                 <div>
                   <div style={{ height: '8px', background: S.warm, borderRadius: '4px', overflow: 'hidden', marginBottom: '8px' }}>
-                    <div style={{ height: '100%', background: generationsRemaining <= 2 ? '#e67e22' : S.gold, borderRadius: '4px', width: `${Math.min(100, (generationsUsed / 15) * 100)}%`, transition: 'width 0.4s' }} />
+                    <div style={{ height: '100%', background: generationsRemaining <= 5 ? '#e67e22' : S.gold, borderRadius: '4px', width: generationsAllowance > 0 ? `${Math.min(100, (generationsUsed / generationsAllowance) * 100)}%` : '0%', transition: 'width 0.4s' }} />
                   </div>
-                  <p style={{ fontSize: '12px', color: S.muted }}>{generationsUsed} of 15 generations used — {generationsRemaining} remaining before top-up needed</p>
+                  <p style={{ fontSize: '12px', color: S.muted }}>
+                    {generationsAllowance > 0
+                      ? `${generationsUsed} of ${generationsAllowance} generations used — ${generationsRemaining} remaining before top-up needed`
+                      : `${generationsRemaining} generations remaining before top-up needed`}
+                  </p>
                 </div>
               )}
 
@@ -198,8 +202,8 @@ function MyAccountContent() {
             <p style={sectionLabel}>Membership</p>
             <p style={{ fontSize: '13px', color: S.muted, marginBottom: '20px', lineHeight: 1.6 }}>
               {plan === 'monthly'
-                ? 'You are on a monthly subscription. Cancelling will stop your subscription at the end of the current billing period. You will retain access to your remaining generations until then.'
-                : 'You are on a Pay As You Go plan. Your remaining generations do not expire.'}
+                ? 'You are on a monthly subscription. Your 100 generations reset every billing month. Cancelling will stop your subscription at the end of the current billing period — you will retain access to your remaining generations until then.'
+                : 'You are on a Pay As You Go plan. Your remaining generations do not expire — use them whenever you like and top up when you need more.'}
             </p>
             {plan === 'monthly' && (
               <div>
