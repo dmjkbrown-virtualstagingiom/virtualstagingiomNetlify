@@ -113,6 +113,7 @@ function BuyerTool() {
   const [photos, setPhotos] = useState<PhotoEntry[]>([]);
   const [selectedStyle, setSelectedStyle] = useState<string | null>(null);
   const [generatedCount, setGeneratedCount] = useState(0);
+  const [showLimitPrompt, setShowLimitPrompt] = useState(false);
   const [showBefore, setShowBefore] = useState<Record<string, boolean>>({});
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
   const [savingIds, setSavingIds] = useState<Set<string>>(new Set());
@@ -166,7 +167,7 @@ function BuyerTool() {
 
     // Check the user has enough generations
     if (!user || generationsRemaining < photos.length) {
-      navigate({ to: "/checkout" });
+      setShowLimitPrompt(true);
       return;
     }
 
@@ -293,6 +294,12 @@ function BuyerTool() {
           <>
             <SectionLabel>Upload up to {MAX_PHOTOS} room photos</SectionLabel>
             <p style={{ fontSize: "13px", color: S.muted, marginBottom: "32px" }}>
+              {generationsRemaining > 0 && generationsRemaining < 5 && (
+                <div style={{ padding: "10px 14px", background: "#fff8ed", border: "1px solid #f0d080", borderRadius: "2px", marginBottom: "16px", fontSize: "13px", color: "#7a5a00" }}>
+                  Only {generationsRemaining} image generation{generationsRemaining === 1 ? "" : "s"} left 👀 You're on a roll… keep the magic going with a quick{" "}
+                  <button onClick={() => navigate({ to: "/checkout" })} style={{ background: "none", border: "none", color: S.gold, fontWeight: 600, cursor: "pointer", fontSize: "13px", fontFamily: "'DM Sans', sans-serif", padding: 0, textDecoration: "underline" }}>top-up ✨</button>
+                </div>
+              )}
               {photos.length === 0
                 ? "Select up to 5 photos at once, or drag and drop them below."
                 : `${photos.length} of ${MAX_PHOTOS} photos added. ${photos.length < MAX_PHOTOS ? "You can add more." : "Maximum reached."}`}
@@ -633,6 +640,34 @@ function ToolLanding() {
           </div>
         </div>
       </div>
+    {/* Limit prompt modal */}
+      {showLimitPrompt && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 300, background: "rgba(26,22,18,0.7)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", padding: "24px" }}>
+          <div style={{ background: S.white, borderRadius: "4px", padding: "40px 36px", maxWidth: "440px", width: "100%", textAlign: "center", boxShadow: "0 24px 64px rgba(26,22,18,0.2)" }}>
+            <div style={{ fontSize: "48px", marginBottom: "16px" }}>😭</div>
+            <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "26px", fontWeight: 300, color: S.ink, marginBottom: "12px", lineHeight: 1.3 }}>
+              You've hit your limit
+            </h2>
+            <p style={{ fontSize: "14px", color: S.muted, lineHeight: 1.7, marginBottom: "28px" }}>
+              But your designs are looking too good to stop now… top up and continue ✨
+            </p>
+            <div style={{ display: "flex", gap: "12px", justifyContent: "center" }}>
+              <button
+                onClick={() => navigate({ to: "/checkout" })}
+                style={{ background: S.gold, color: S.white, padding: "12px 28px", borderRadius: "2px", border: "none", fontSize: "13px", fontWeight: 500, letterSpacing: "0.1em", textTransform: "uppercase", cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}
+              >
+                Top up now
+              </button>
+              <button
+                onClick={() => setShowLimitPrompt(false)}
+                style={{ background: "transparent", color: S.muted, padding: "12px 20px", borderRadius: "2px", border: `1px solid ${S.warm}`, fontSize: "13px", cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}
+              >
+                Maybe later
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
