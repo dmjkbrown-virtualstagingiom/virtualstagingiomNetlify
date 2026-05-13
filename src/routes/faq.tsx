@@ -19,82 +19,127 @@ const S = {
 
 const faqs = [
   {
-    category: 'Product',
+    category: 'Getting Started',
     items: [
       {
         question: 'What is Virtual Staging IOM?',
         answer:
-          'Virtual Staging IOM is an AI-powered interior redesign widget for estate agent websites. Buyers click a button on a listing page, choose an interior style, and the AI reimagines every room in 15-30 seconds. Estate agents add a single script tag -- no per-listing setup required.',
+          'Virtual Staging IOM is an AI-powered interior redesign tool for home owners. Upload photos of any room in your home, choose an interior style, and our AI reimagines the space in seconds — giving you a photorealistic preview of how your home could look before you spend a penny on renovations, furniture, or decorating.',
       },
       {
-        question: 'How does the AI generation work?',
+        question: 'Do I need any design experience to use it?',
         answer:
-          'Virtual Staging IOM uses FLUX, a state-of-the-art image generation model, to reimagine property photos in a chosen interior style. Each image is processed via our API pipeline: room type is detected with Claude Vision, a tailored prompt is built, and the result is generated and cached for future visitors.',
+          'Not at all. Simply upload your photos, pick a room type, choose a style you love, and let the AI do the rest. The whole process takes less than two minutes and requires no technical or design knowledge whatsoever.',
       },
+      {
+        question: 'What kind of photos should I upload?',
+        answer:
+          'Clear, well-lit photos taken from a corner or doorway work best — similar to how estate agents photograph rooms. Avoid very dark images or extremely wide-angle shots. JPG, PNG and WEBP formats are all supported. You can upload up to 5 room photos at a time.',
+      },
+      {
+        question: 'How long does it take to generate a redesign?',
+        answer:
+          'Each room takes approximately 30–60 seconds to generate. If you upload 5 rooms, all 5 are processed and ready within a couple of minutes. You can watch the progress in real time as each room completes.',
+      },
+    ],
+  },
+  {
+    category: 'Styles & Results',
+    items: [
       {
         question: 'What interior styles are available?',
         answer:
-          'There are 8 curated styles: Scandinavian, Contemporary, Industrial, Maximalist, Japandi, Coastal, Art Deco, and Biophilic. You can enable or disable individual styles per account from your dashboard. Additional custom styles are available on Agency and Enterprise plans.',
+          'There are 10 curated styles to choose from: Japandi, Scandinavian, Coastal, Luxury Modern, Modern Farmhouse, Urban Masculine, Biophilic Design, Maximalist, Minimalist, and Whites. Each style produces a distinctly different look and feel, from calm and neutral to bold and dramatic.',
       },
       {
-        question: 'Do buyers need to upload photos?',
+        question: 'Can I try different styles on the same photos?',
         answer:
-          'No. In production, the widget automatically detects property photos already on the listing page -- buyers never need to upload anything. The "upload" step in the standalone buyer tool demo is for testing purposes only.',
-      },
-    ],
-  },
-  {
-    category: 'Integration',
-    items: [
-      {
-        question: 'How do I add Virtual Staging IOM to my listing pages?',
-        answer:
-          'Paste one script tag before the closing </body> tag in your listing page template. The widget activates automatically on every listing. For platforms like WordPress, Reapit, or Alto, we provide step-by-step guides in your dashboard -> Integration tab.',
+          'Yes! After your first generation you can click "Try another style" to run the same room photos through a completely different style without re-uploading anything. Your photos stay loaded until you start over.',
       },
       {
-        question: 'Does the widget affect my page speed?',
+        question: 'How accurate are the results?',
         answer:
-          'No. The widget script loads asynchronously with the defer attribute, so it never blocks page rendering. The total uncompressed widget size is ~40KB. Generated images are served from Cloudflare\'s CDN with a 70%+ cache hit rate, so most repeat visitors see instant results.',
+          'The AI maintains the architectural layout of your room — windows, doors, ceiling height, and room proportions stay exactly as they are. Furniture, flooring, wall colours, and soft furnishings are redesigned to match your chosen style. Results are photorealistic and intended as an inspiring visualisation rather than an exact blueprint.',
       },
       {
-        question: 'Can I customise the widget to match my brand?',
+        question: 'Will the AI change the structure of my room?',
         answer:
-          'Yes. You can set your accent colour, button label, and which styles to offer from your dashboard. On Agency plans you can fully white-label the widget, removing all Virtual Staging IOM branding.',
+          'No. The AI is instructed to preserve all structural elements — walls, windows, doors, ceilings — and only replace the decorative elements like furniture, flooring, paint colours, and accessories. The bones of your room stay the same.',
       },
     ],
   },
   {
-    category: 'Pricing & Billing',
+    category: 'Saving & Downloads',
     items: [
       {
-        question: 'What counts as a "generation"?',
+        question: 'Can I download my generated images?',
         answer:
-          'A generation is one AI-transformed image. If a buyer views results for a listing and 4 rooms have already been generated in Scandinavian style (cached), those don\'t count against your quota. Only the first fresh generation per image+style combination uses quota.',
+          'Yes. Every generated image has a Download button that saves a high-quality version directly to your device. You can download as many as you like.',
       },
       {
-        question: 'Can I change plans at any time?',
+        question: 'What is "Save to My Designs"?',
         answer:
-          'Yes. You can upgrade or downgrade at any time from your dashboard -> Billing tab. Upgrades take effect immediately (prorated). Downgrades take effect at the start of your next billing cycle.',
+          'Clicking "Save to My Designs" stores your favourite generated images to your account permanently. You can access them anytime from the My Designs page in your navigation. This is a great way to save the looks you love and compare them later.',
       },
       {
-        question: 'Do you offer a free trial?',
+        question: 'How long are my saved designs kept?',
         answer:
-          'The Starter plan (£49/month) comes with a 14-day free trial -- no credit card required. Growth and Agency plans can be trialled by contacting us at hello@virtualstagingIOM.com.',
+          'Designs saved to your account are stored permanently and will not expire. Generated images that have not been saved may expire after a few days, so we recommend saving any designs you love straight away.',
       },
     ],
   },
   {
-    category: 'Results & Disclosure',
+    category: 'Credits & Pricing',
     items: [
       {
-        question: 'Are the AI results shown to buyers as real?',
+        question: 'How do credits work?',
         answer:
-          'No. All results include an "AI Visualisation" watermark by default (configurable). We recommend including a note in your listing disclaimers such as: "Some images show AI-generated interior styling concepts and are not representative of the current state of the property."',
+          'Each AI-generated image uses one credit. If you upload 5 rooms and generate redesigns, that uses 5 credits. Trying a different style on the same 5 rooms uses another 5 credits. Your credit balance is shown on your My Account page at all times.',
       },
       {
-        question: 'What results are estate agents seeing?',
+        question: 'How many free generations do I get?',
         answer:
-          'Beta partners report a 38% increase in viewing requests from listings using Virtual Staging IOM, buyers spending 3.2x longer on listing pages, and measurably higher engagement with listings under £1.5M where buyers are most likely to personalise.',
+          'Every new account includes 3 free AI generations so you can try the tool before purchasing. No credit card is required to sign up.',
+      },
+      {
+        question: 'What happens when I run out of credits?',
+        answer:
+          'When your credits run low you will see a prompt to top up. Once you have used all your credits, you will need to purchase more before generating additional images. Your saved designs and account remain fully accessible.',
+      },
+      {
+        question: 'What are my payment options?',
+        answer:
+          'We offer two options. Pay As You Go (£3.99) gives you 15 credits that never expire — top up whenever you need more. Monthly (£7.99/month) gives you 100 credits every month, automatically renewed. You can cancel your monthly plan at any time from your My Account page.',
+      },
+      {
+        question: 'Do Pay As You Go credits expire?',
+        answer:
+          'No. Pay As You Go credits never expire. Use them at your own pace — whether that\'s all at once or spread over several months.',
+      },
+      {
+        question: 'Can I cancel my monthly subscription?',
+        answer:
+          'Yes, you can cancel at any time from your My Account page. Your subscription will remain active until the end of the current billing period, and you will keep access to your remaining credits until then.',
+      },
+    ],
+  },
+  {
+    category: 'Account & Privacy',
+    items: [
+      {
+        question: 'Is my data safe?',
+        answer:
+          'Yes. Your uploaded photos are used solely to generate your redesigns and are not shared with third parties or used to train AI models. Generated images saved to your account are stored securely and are only accessible by you.',
+      },
+      {
+        question: 'Can I use the generated images commercially?',
+        answer:
+          'Images generated through Virtual Staging IOM are for personal use and inspiration — for example, planning a renovation or visualising a new look for your home. If you intend to use generated images in marketing materials or for commercial property listings, please contact us first.',
+      },
+      {
+        question: 'Are the AI images presented as real?',
+        answer:
+          'All generated images are clearly labelled with an "AI Visualisation" badge. They are intended as an inspiring preview of possibilities, not a representation of the current state of a property.',
       },
     ],
   },
@@ -116,9 +161,9 @@ function FAQ() {
             Frequently asked <em style={{ fontStyle: 'italic', color: '#d4b07a' }}>questions</em>
           </h1>
           <p style={{ color: '#8a7f72', fontSize: '15px', lineHeight: 1.7, maxWidth: '480px' }}>
-            Everything estate agents and buyers need to know about Virtual Staging IOM.
+            Everything you need to know about reimagining your home with Virtual Staging IOM.
             Can't find an answer? Email us at{' '}
-            <a href="mailto:hello@virtualstagingIOM.com" style={{ color: '#b8965a' }}>hello@virtualstagingIOM.com</a>
+            <a href="mailto:virtualstagingiom@gmail.com" style={{ color: '#b8965a' }}>virtualstagingiom@gmail.com</a>
           </p>
         </div>
       </div>
@@ -143,28 +188,30 @@ function FAQ() {
         ))}
 
         <div style={{
-          background: '#1a1612', padding: '36px 36px', borderRadius: '2px',
+          background: '#1a1612', padding: '36px', borderRadius: '2px',
           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          flexWrap: 'wrap', gap: '20px',
         }}>
           <div>
             <p style={{ color: '#f5f0e8', fontSize: '16px', fontWeight: 400, marginBottom: '6px' }}>
               Still have questions?
             </p>
             <p style={{ color: '#8a7f72', fontSize: '13px' }}>
-              Our team is happy to walk you through a live demo.
+              We're happy to help — drop us an email and we'll get back to you.
             </p>
           </div>
-          <div style={{ display: 'flex', gap: '10px' }}>
-            <Link to="/embed-demo" style={{
+          <a
+            href="mailto:virtualstagingiom@gmail.com"
+            style={{
               background: '#b8965a', color: '#fff',
               padding: '10px 24px', borderRadius: '2px',
               fontSize: '12px', fontWeight: 500,
               letterSpacing: '0.08em', textTransform: 'uppercase',
-              textDecoration: 'none',
-            }}>
-              See demo
-            </Link>
-          </div>
+              textDecoration: 'none', whiteSpace: 'nowrap',
+            }}
+          >
+            Get in touch
+          </a>
         </div>
       </div>
     </div>
@@ -206,9 +253,8 @@ function Accordion({ question, answer }: { question: string; answer: string }) {
       </button>
       {open && (
         <div style={{
-          padding: '0 22px 18px', fontSize: '14px', color: S.muted, lineHeight: 1.75,
+          padding: '16px 22px 18px', fontSize: '14px', color: S.muted, lineHeight: 1.75,
           borderTop: `1px solid ${S.warm}`,
-          paddingTop: '16px',
         }}>
           {answer}
         </div>
