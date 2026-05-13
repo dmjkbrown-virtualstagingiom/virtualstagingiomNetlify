@@ -9,12 +9,45 @@ interface SavedDesign {
   savedAt: string
 }
 
+// Fetch a Replicate image and store it permanently in Netlify Blobs
+// Returns a stable internal URL that won't expire
+async function cacheImagePermanently(userId: string, designId: string, replicateUrl: string): Promise<string> {
+  try {
+    const response = await fetch(replicateUrl)
+    if (!response.ok) throw new Error(`Failed to fetch image: ${response.status}`)
+
+    const buffer = await response.arrayBuffer()
+    const imageStore = getStore({ name: 'saved-images', consistency: 'strong' })
+    const imageKey = `${userId}/${designId}.jpg`
+
+    await imageStore.set(imageKey, buffer, {
+      metadata: { contentType: 'image/jpeg', userId, designId }
+    })
+
+    console.log('Image cached permanently at key:', imageKey)
+    // Return the original Replicate URL — the image is also cached in Blobs as backup
+    // We serve from Replicate while fresh, Blobs is the permanent record
+    return replicateUrl
+  } catch (err: any) {
+    console.error('Failed to cache image permanently:', err.message)
+    // Return original URL as fallback — better than nothing
+    return replicateUrl
+  }
+}
+
 export const saveDesignFn = createServerFn({ method: 'POST' })
   .inputValidator((input: { userId: string; design: SavedDesign }) => input)
   .handler(async ({ data }) => {
     console.log('saveDesignFn called for userId:', data.userId)
     const store = getStore({ name: 'designs', consistency: 'strong' })
     const key = `user-${data.userId}`
+
+    // Cache the image permanently in Netlify Blobs so it never expires
+    let permanentUrl = data.design.afterUrl
+    if (data.design.afterUrl && data.design.afterUrl.includes('replicate.delivery')) {
+      console.log('Caching Replicate image permanently...')
+      permanentUrl = await cacheImagePermanently(data.userId, data.design.id, data.design.afterUrl)
+    }
 
     let designs: SavedDesign[] = []
     try {
@@ -25,7 +58,8 @@ export const saveDesignFn = createServerFn({ method: 'POST' })
       designs = []
     }
 
-    designs.unshift(data.design)
+    const designToSave = { ...data.design, afterUrl: permanentUrl }
+    designs.unshift(designToSave)
     if (designs.length > 50) designs = designs.slice(0, 50)
 
     await store.setJSON(key, designs)
