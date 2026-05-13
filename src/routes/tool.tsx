@@ -295,9 +295,24 @@ function BuyerTool() {
             <SectionLabel>Upload up to {MAX_PHOTOS} room photos</SectionLabel>
             <p style={{ fontSize: "13px", color: S.muted, marginBottom: "32px" }}>
               {generationsRemaining > 0 && generationsRemaining < 5 && (
-                <div style={{ padding: "10px 14px", background: "#fff8ed", border: "1px solid #f0d080", borderRadius: "2px", marginBottom: "16px", fontSize: "13px", color: "#7a5a00" }}>
-                  Only {generationsRemaining} image generation{generationsRemaining === 1 ? "" : "s"} left 👀 You're on a roll… keep the magic going with a quick{" "}
-                  <button onClick={() => navigate({ to: "/checkout" })} style={{ background: "none", border: "none", color: S.gold, fontWeight: 600, cursor: "pointer", fontSize: "13px", fontFamily: "'DM Sans', sans-serif", padding: 0, textDecoration: "underline" }}>top-up ✨</button>
+                <div style={{ padding: "14px 18px", background: "linear-gradient(135deg, #fff8ed 0%, #fff3e0 100%)", border: "1px solid #f0d080", borderRadius: "4px", marginBottom: "20px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", flexWrap: "wrap" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                    <span style={{ fontSize: "20px" }}>👀</span>
+                    <div>
+                      <p style={{ fontSize: "13px", fontWeight: 600, color: "#7a5a00", marginBottom: "2px" }}>
+                        Only {generationsRemaining} image generation{generationsRemaining === 1 ? "" : "s"} left!
+                      </p>
+                      <p style={{ fontSize: "12px", color: "#9a7a20" }}>
+                        You're on a roll… keep the magic going with a quick top-up ✨
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => navigate({ to: "/checkout" })}
+                    style={{ background: S.gold, color: S.white, border: "none", borderRadius: "2px", padding: "8px 18px", fontSize: "12px", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", whiteSpace: "nowrap" }}
+                  >
+                    Top up now ✨
+                  </button>
                 </div>
               )}
               {photos.length === 0
