@@ -133,7 +133,21 @@ function MyDesignsContent() {
             {designs.map(design => (
               <div key={design.id} style={{ background: S.white, borderRadius: '2px', overflow: 'hidden', boxShadow: '0 4px 24px rgba(26,22,18,0.08)' }}>
                 <div style={{ position: 'relative', aspectRatio: '4/3' }}>
-                  <img src={design.afterUrl} alt={design.roomLabel} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                  <img
+                    src={design.afterUrl}
+                    alt={design.roomLabel}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                    onError={(e) => {
+                      const target = e.currentTarget
+                      target.style.display = 'none'
+                      const placeholder = target.nextElementSibling as HTMLElement
+                      if (placeholder) placeholder.style.display = 'flex'
+                    }}
+                  />
+                  <div style={{ display: 'none', width: '100%', height: '100%', background: '#f0ede6', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '8px' }}>
+                    <span style={{ fontSize: '28px' }}>🖼️</span>
+                    <span style={{ fontSize: '11px', color: '#8a7f72', textAlign: 'center', padding: '0 12px' }}>Image expired — generate a new one</span>
+                  </div>
                   <div style={{ position: 'absolute', top: '10px', right: '10px', background: 'rgba(184,150,90,0.9)', color: S.white, fontSize: '10px', padding: '3px 8px', borderRadius: '2px', letterSpacing: '0.06em' }}>
                     AI Visualisation
                   </div>
