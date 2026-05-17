@@ -12,9 +12,13 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as ToolRouteImport } from './routes/tool'
 import { Route as SignUpRouteImport } from './routes/sign-up'
 import { Route as SignInRouteImport } from './routes/sign-in'
+import { Route as MyDesignsRouteImport } from './routes/my-designs'
+import { Route as MyAccountRouteImport } from './routes/my-account'
 import { Route as FaqRouteImport } from './routes/faq'
-import { Route as EmbedDemoRouteImport } from './routes/embed-demo'
+import { Route as EstateAgentToolRouteImport } from './routes/estate-agent-tool'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as CheckoutRouteImport } from './routes/checkout'
+import { Route as CheckoutSuccessRouteImport } from './routes/checout-success'
 import { Route as BuyerDashboardRouteImport } from './routes/buyer-dashboard'
 import { Route as AgentDashboardRouteImport } from './routes/agent-dashboard'
 import { Route as IndexRouteImport } from './routes/index'
@@ -34,19 +38,39 @@ const SignInRoute = SignInRouteImport.update({
   path: '/sign-in',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MyDesignsRoute = MyDesignsRouteImport.update({
+  id: '/my-designs',
+  path: '/my-designs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MyAccountRoute = MyAccountRouteImport.update({
+  id: '/my-account',
+  path: '/my-account',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const FaqRoute = FaqRouteImport.update({
   id: '/faq',
   path: '/faq',
   getParentRoute: () => rootRouteImport,
 } as any)
-const EmbedDemoRoute = EmbedDemoRouteImport.update({
-  id: '/embed-demo',
-  path: '/embed-demo',
+const EstateAgentToolRoute = EstateAgentToolRouteImport.update({
+  id: '/estate-agent-tool',
+  path: '/estate-agent-tool',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CheckoutRoute = CheckoutRouteImport.update({
+  id: '/checkout',
+  path: '/checkout',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CheckoutSuccessRoute = CheckoutSuccessRouteImport.update({
+  id: '/checout-success',
+  path: '/checout-success',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BuyerDashboardRoute = BuyerDashboardRouteImport.update({
@@ -69,9 +93,13 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/agent-dashboard': typeof AgentDashboardRoute
   '/buyer-dashboard': typeof BuyerDashboardRoute
+  '/checout-success': typeof CheckoutSuccessRoute
+  '/checkout': typeof CheckoutRoute
   '/dashboard': typeof DashboardRoute
-  '/embed-demo': typeof EmbedDemoRoute
+  '/estate-agent-tool': typeof EstateAgentToolRoute
   '/faq': typeof FaqRoute
+  '/my-account': typeof MyAccountRoute
+  '/my-designs': typeof MyDesignsRoute
   '/sign-in': typeof SignInRoute
   '/sign-up': typeof SignUpRoute
   '/tool': typeof ToolRoute
@@ -80,9 +108,13 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/agent-dashboard': typeof AgentDashboardRoute
   '/buyer-dashboard': typeof BuyerDashboardRoute
+  '/checout-success': typeof CheckoutSuccessRoute
+  '/checkout': typeof CheckoutRoute
   '/dashboard': typeof DashboardRoute
-  '/embed-demo': typeof EmbedDemoRoute
+  '/estate-agent-tool': typeof EstateAgentToolRoute
   '/faq': typeof FaqRoute
+  '/my-account': typeof MyAccountRoute
+  '/my-designs': typeof MyDesignsRoute
   '/sign-in': typeof SignInRoute
   '/sign-up': typeof SignUpRoute
   '/tool': typeof ToolRoute
@@ -92,28 +124,36 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/agent-dashboard': typeof AgentDashboardRoute
   '/buyer-dashboard': typeof BuyerDashboardRoute
+  '/checout-success': typeof CheckoutSuccessRoute
+  '/checkout': typeof CheckoutRoute
   '/dashboard': typeof DashboardRoute
-  '/embed-demo': typeof EmbedDemoRoute
+  '/estate-agent-tool': typeof EstateAgentToolRoute
   '/faq': typeof FaqRoute
+  '/my-account': typeof MyAccountRoute
+  '/my-designs': typeof MyDesignsRoute
   '/sign-in': typeof SignInRoute
   '/sign-up': typeof SignUpRoute
   '/tool': typeof ToolRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/agent-dashboard' | '/buyer-dashboard' | '/dashboard' | '/embed-demo' | '/faq' | '/sign-in' | '/sign-up' | '/tool'
+  fullPaths: '/' | '/agent-dashboard' | '/buyer-dashboard' | '/checout-success' | '/checkout' | '/dashboard' | '/estate-agent-tool' | '/faq' | '/my-account' | '/my-designs' | '/sign-in' | '/sign-up' | '/tool'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/agent-dashboard' | '/buyer-dashboard' | '/dashboard' | '/embed-demo' | '/faq' | '/sign-in' | '/sign-up' | '/tool'
-  id: '__root__' | '/' | '/agent-dashboard' | '/buyer-dashboard' | '/dashboard' | '/embed-demo' | '/faq' | '/sign-in' | '/sign-up' | '/tool'
+  to: '/' | '/agent-dashboard' | '/buyer-dashboard' | '/checout-success' | '/checkout' | '/dashboard' | '/estate-agent-tool' | '/faq' | '/my-account' | '/my-designs' | '/sign-in' | '/sign-up' | '/tool'
+  id: '__root__' | '/' | '/agent-dashboard' | '/buyer-dashboard' | '/checout-success' | '/checkout' | '/dashboard' | '/estate-agent-tool' | '/faq' | '/my-account' | '/my-designs' | '/sign-in' | '/sign-up' | '/tool'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AgentDashboardRoute: typeof AgentDashboardRoute
   BuyerDashboardRoute: typeof BuyerDashboardRoute
+  CheckoutSuccessRoute: typeof CheckoutSuccessRoute
+  CheckoutRoute: typeof CheckoutRoute
   DashboardRoute: typeof DashboardRoute
-  EmbedDemoRoute: typeof EmbedDemoRoute
+  EstateAgentToolRoute: typeof EstateAgentToolRoute
   FaqRoute: typeof FaqRoute
+  MyAccountRoute: typeof MyAccountRoute
+  MyDesignsRoute: typeof MyDesignsRoute
   SignInRoute: typeof SignInRoute
   SignUpRoute: typeof SignUpRoute
   ToolRoute: typeof ToolRoute
@@ -142,6 +182,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SignInRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/my-designs': {
+      id: '/my-designs'
+      path: '/my-designs'
+      fullPath: '/my-designs'
+      preLoaderRoute: typeof MyDesignsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/my-account': {
+      id: '/my-account'
+      path: '/my-account'
+      fullPath: '/my-account'
+      preLoaderRoute: typeof MyAccountRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/faq': {
       id: '/faq'
       path: '/faq'
@@ -149,11 +203,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FaqRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/embed-demo': {
-      id: '/embed-demo'
-      path: '/embed-demo'
-      fullPath: '/embed-demo'
-      preLoaderRoute: typeof EmbedDemoRouteImport
+    '/estate-agent-tool': {
+      id: '/estate-agent-tool'
+      path: '/estate-agent-tool'
+      fullPath: '/estate-agent-tool'
+      preLoaderRoute: typeof EstateAgentToolRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard': {
@@ -161,6 +215,20 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/checkout': {
+      id: '/checkout'
+      path: '/checkout'
+      fullPath: '/checkout'
+      preLoaderRoute: typeof CheckoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/checout-success': {
+      id: '/checout-success'
+      path: '/checout-success'
+      fullPath: '/checout-success'
+      preLoaderRoute: typeof CheckoutSuccessRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/buyer-dashboard': {
@@ -191,9 +259,13 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AgentDashboardRoute: AgentDashboardRoute,
   BuyerDashboardRoute: BuyerDashboardRoute,
+  CheckoutSuccessRoute: CheckoutSuccessRoute,
+  CheckoutRoute: CheckoutRoute,
   DashboardRoute: DashboardRoute,
-  EmbedDemoRoute: EmbedDemoRoute,
+  EstateAgentToolRoute: EstateAgentToolRoute,
   FaqRoute: FaqRoute,
+  MyAccountRoute: MyAccountRoute,
+  MyDesignsRoute: MyDesignsRoute,
   SignInRoute: SignInRoute,
   SignUpRoute: SignUpRoute,
   ToolRoute: ToolRoute,
