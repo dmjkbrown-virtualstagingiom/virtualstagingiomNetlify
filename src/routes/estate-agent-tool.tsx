@@ -23,11 +23,11 @@ const STYLES = [
 ]
 
 const ROOMS = [
-  { url: '/Living room.jpg', label: 'Living Room', roomId: 'livingroom' },
+  { url: '/Living%20room.jpg', label: 'Living Room', roomId: 'livingroom' },
   { url: '/Kitchen.png', label: 'Kitchen', roomId: 'kitchen' },
   { url: '/Bedroom.JPG', label: 'Bedroom', roomId: 'bedroom' },
   { url: '/Hallway.png', label: 'Hallway', roomId: 'hallway' },
-  { url: '/Open plan dining lounge.jpg', label: 'Open Plan Dining Lounge', roomId: 'openplanlounge' },
+  { url: '/Open%20plan%20dining%20lounge.jpg', label: 'Open Plan Dining Lounge', roomId: 'openplanlounge' },
 ]
 
 type WidgetState = 'closed' | 'picker' | 'generating' | 'results'
@@ -200,6 +200,96 @@ function EstateAgentTool() {
         </div>
       </div>
 
+      {/* Pricing section */}
+      <div style={{ background: S.surface, padding: '72px 40px' }}>
+        <div style={{ maxWidth: '980px', margin: '0 auto' }}>
+          <p style={{ fontSize: '11px', letterSpacing: '0.18em', textTransform: 'uppercase', color: S.gold, fontWeight: 500, marginBottom: '12px', textAlign: 'center' }}>Pricing</p>
+          <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '36px', fontWeight: 300, color: S.ink, lineHeight: 1.1, marginBottom: '12px', textAlign: 'center' }}>
+            Simple, transparent <em style={{ color: S.gold }}>packages</em>
+          </h2>
+          <p style={{ fontSize: '14px', color: S.muted, marginBottom: '48px', lineHeight: 1.7, textAlign: 'center' }}>
+            One-off listing bundles — no monthly commitment. Top up whenever you need more.
+          </p>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px' }}>
+
+            {/* Basic */}
+            <div style={{ background: S.white, border: `1px solid ${S.warm}`, borderRadius: '4px', padding: '28px 22px', display: 'flex', flexDirection: 'column' }}>
+              <p style={{ fontSize: '11px', letterSpacing: '0.14em', textTransform: 'uppercase', color: S.muted, fontWeight: 500, marginBottom: '12px' }}>Basic</p>
+              <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '42px', fontWeight: 300, color: S.ink, lineHeight: 1, marginBottom: '2px' }}>£99</p>
+              <p style={{ fontSize: '13px', color: S.muted, marginBottom: '20px' }}>10 listings</p>
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '24px' }}>
+                {['AI staging on 10 listings', 'All 10 interior styles', 'Buyer-facing widget', 'No monthly commitment'].map(f => (
+                  <div key={f} style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
+                    <span style={{ color: S.gold, fontSize: '12px', flexShrink: 0 }}>✓</span>
+                    <span style={{ fontSize: '12px', color: S.ink, lineHeight: 1.5 }}>{f}</span>
+                  </div>
+                ))}
+              </div>
+              <a href="#enquire" style={{ display: 'block', textAlign: 'center', background: 'transparent', color: S.gold, border: `1px solid ${S.gold}`, padding: '10px', borderRadius: '2px', fontSize: '11px', fontWeight: 500, letterSpacing: '0.1em', textTransform: 'uppercase', textDecoration: 'none', fontFamily: "'DM Sans', sans-serif" }}>Enquire Now</a>
+            </div>
+
+            {/* Silver */}
+            <div style={{ background: S.white, border: `1px solid ${S.warm}`, borderRadius: '4px', padding: '28px 22px', display: 'flex', flexDirection: 'column' }}>
+              <p style={{ fontSize: '11px', letterSpacing: '0.14em', textTransform: 'uppercase', color: S.muted, fontWeight: 500, marginBottom: '12px' }}>Silver</p>
+              <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '42px', fontWeight: 300, color: S.ink, lineHeight: 1, marginBottom: '2px' }}>£249</p>
+              <p style={{ fontSize: '13px', color: S.muted, marginBottom: '20px' }}>30 listings</p>
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '24px' }}>
+                {['AI staging on 30 listings', 'All 10 interior styles', 'Buyer-facing widget', 'No monthly commitment', 'Priority email support'].map(f => (
+                  <div key={f} style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
+                    <span style={{ color: S.gold, fontSize: '12px', flexShrink: 0 }}>✓</span>
+                    <span style={{ fontSize: '12px', color: S.ink, lineHeight: 1.5 }}>{f}</span>
+                  </div>
+                ))}
+              </div>
+              <a href="#enquire" style={{ display: 'block', textAlign: 'center', background: 'transparent', color: S.gold, border: `1px solid ${S.gold}`, padding: '10px', borderRadius: '2px', fontSize: '11px', fontWeight: 500, letterSpacing: '0.1em', textTransform: 'uppercase', textDecoration: 'none', fontFamily: "'DM Sans', sans-serif" }}>Enquire Now</a>
+            </div>
+
+            {/* Gold */}
+            <div style={{ background: S.ink, border: `1px solid ${S.gold}`, borderRadius: '4px', padding: '28px 22px', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+              <div style={{ position: 'absolute', top: '-12px', left: '50%', transform: 'translateX(-50%)', background: S.gold, color: S.white, fontSize: '9px', padding: '3px 12px', borderRadius: '10px', letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 600, whiteSpace: 'nowrap' }}>Most Popular</div>
+              <p style={{ fontSize: '11px', letterSpacing: '0.14em', textTransform: 'uppercase', color: S.gold, fontWeight: 500, marginBottom: '12px' }}>Gold</p>
+              <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '42px', fontWeight: 300, color: S.cream, lineHeight: 1, marginBottom: '2px' }}>£499</p>
+              <p style={{ fontSize: '13px', color: S.muted, marginBottom: '20px' }}>75 listings</p>
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '24px' }}>
+                {['AI staging on 75 listings', 'All 10 interior styles', 'Buyer-facing widget', 'No monthly commitment', 'Priority support', 'Dedicated onboarding'].map(f => (
+                  <div key={f} style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
+                    <span style={{ color: S.gold, fontSize: '12px', flexShrink: 0 }}>✓</span>
+                    <span style={{ fontSize: '12px', color: S.cream, lineHeight: 1.5 }}>{f}</span>
+                  </div>
+                ))}
+              </div>
+              <a href="#enquire" style={{ display: 'block', textAlign: 'center', background: S.gold, color: S.white, padding: '10px', borderRadius: '2px', fontSize: '11px', fontWeight: 500, letterSpacing: '0.1em', textTransform: 'uppercase', textDecoration: 'none', fontFamily: "'DM Sans', sans-serif" }}>Enquire Now</a>
+            </div>
+
+            {/* Platinum */}
+            <div style={{ background: 'linear-gradient(160deg, #1e1a14 0%, #2a2018 100%)', border: '1px solid rgba(212,180,120,0.35)', borderRadius: '4px', padding: '28px 22px', display: 'flex', flexDirection: 'column' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '12px' }}>
+                <p style={{ fontSize: '11px', letterSpacing: '0.14em', textTransform: 'uppercase', color: '#d4b478', fontWeight: 500 }}>Platinum</p>
+                <span style={{ fontSize: '9px', background: 'rgba(212,180,120,0.15)', color: '#d4b478', padding: '2px 7px', borderRadius: '8px', letterSpacing: '0.06em', textTransform: 'uppercase', border: '1px solid rgba(212,180,120,0.25)' }}>75+ listings</span>
+              </div>
+              <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '32px', fontWeight: 300, color: '#d4b478', lineHeight: 1, marginBottom: '2px' }}>Upon Request</p>
+              <p style={{ fontSize: '13px', color: S.muted, marginBottom: '20px' }}>Bespoke pricing</p>
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '24px' }}>
+                {[
+                  'Everything in Gold',
+                  'Agency watermark on all images',
+                  'AI chat for tailored prompts',
+                  'Bespoke style customisation',
+                  'Dedicated account manager',
+                  'White-label option available',
+                ].map(f => (
+                  <div key={f} style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
+                    <span style={{ color: '#d4b478', fontSize: '12px', flexShrink: 0 }}>✓</span>
+                    <span style={{ fontSize: '12px', color: S.cream, lineHeight: 1.5 }}>{f}</span>
+                  </div>
+                ))}
+              </div>
+              <a href="#platinum-enquire" style={{ display: 'block', textAlign: 'center', background: 'transparent', color: '#d4b478', border: '1px solid rgba(212,180,120,0.4)', padding: '10px', borderRadius: '2px', fontSize: '11px', fontWeight: 500, letterSpacing: '0.1em', textTransform: 'uppercase', textDecoration: 'none', fontFamily: "'DM Sans', sans-serif" }}>Request a Proposal</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Enquire Now section */}
       <div id="enquire" style={{ background: S.ink, padding: '72px 40px', marginTop: '40px' }}>
         <div style={{ maxWidth: '860px', margin: '0 auto' }}>
@@ -223,6 +313,23 @@ function EstateAgentTool() {
           ) : (
             <EnquiryForm onClose={() => setShowEnquiryForm(false)} />
           )}
+        </div>
+      </div>
+
+      {/* Platinum enquiry section */}
+      <div id="platinum-enquire" style={{ background: 'linear-gradient(160deg, #1e1a14 0%, #2a2018 100%)', padding: '72px 40px' }}>
+        <div style={{ maxWidth: '860px', margin: '0 auto' }}>
+          <p style={{ fontSize: '11px', letterSpacing: '0.18em', textTransform: 'uppercase', color: '#d4b478', fontWeight: 500, marginBottom: '12px' }}>Platinum Package</p>
+          <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '36px', fontWeight: 300, color: S.cream, lineHeight: 1.1, marginBottom: '16px' }}>
+            Built for agencies with <em style={{ color: '#d4b478' }}>75+ listings.</em>
+          </h2>
+          <p style={{ fontSize: '14px', color: S.muted, marginBottom: '16px', lineHeight: 1.7, maxWidth: '580px' }}>
+            Platinum is a fully bespoke solution for high-volume estate agencies. Your agency watermark appears on every AI-generated image, and your team gets access to an AI chat interface for crafting tailored prompts — giving you full creative control over how each property is presented.
+          </p>
+          <p style={{ fontSize: '14px', color: S.muted, marginBottom: '40px', lineHeight: 1.7, maxWidth: '580px' }}>
+            Tell us about your agency and active listing volume and we'll put together a custom proposal within one business day.
+          </p>
+          <PlatinumEnquiryForm />
         </div>
       </div>
 
@@ -444,6 +551,84 @@ function EnquiryForm({ onClose }: { onClose: () => void }) {
           Cancel
         </button>
       </div>
+    </div>
+  )
+}
+
+function PlatinumEnquiryForm() {
+  const [form, setForm] = useState({ name: '', agency: '', email: '', phone: '', website: '', listingsCount: '', hearAbout: '', message: '' })
+  const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    setForm(prev => ({ ...prev, [e.target.name]: e.target.value }))
+  }
+
+  const handleSubmit = async () => {
+    if (!form.name || !form.agency || !form.email || !form.listingsCount) {
+      setStatus('error')
+      return
+    }
+    setStatus('sending')
+    try {
+      const body = new FormData()
+      body.append('form-name', 'platinum-enquiry')
+      Object.entries(form).forEach(([k, v]) => body.append(k, v))
+      const res = await fetch('/', { method: 'POST', body })
+      setStatus(res.ok ? 'sent' : 'error')
+    } catch {
+      setStatus('error')
+    }
+  }
+
+  if (status === 'sent') {
+    return (
+      <div style={{ background: 'rgba(212,180,120,0.08)', border: '1px solid rgba(212,180,120,0.3)', borderRadius: '4px', padding: '40px', textAlign: 'center' }}>
+        <div style={{ fontSize: '40px', marginBottom: '16px' }}>✓</div>
+        <p style={{ fontSize: '18px', color: '#d4b478', fontFamily: "'Cormorant Garamond', serif", fontWeight: 300, marginBottom: '8px' }}>Proposal request received</p>
+        <p style={{ fontSize: '13px', color: '#8a7f72', lineHeight: 1.7 }}>Thank you {form.name}. We'll review your agency details and be in touch within one business day at {form.email}.</p>
+      </div>
+    )
+  }
+
+  const pInput: React.CSSProperties = { width: '100%', padding: '10px 14px', border: '1px solid rgba(212,180,120,0.25)', borderRadius: '2px', fontSize: '14px', fontFamily: "'DM Sans', sans-serif", outline: 'none', boxSizing: 'border-box', background: 'rgba(255,255,255,0.06)', color: '#f5f0e8' }
+  const pLabel: React.CSSProperties = { display: 'block', fontSize: '11px', fontWeight: 500, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#8a7f72', marginBottom: '6px' }
+
+  return (
+    <div style={{ background: 'rgba(212,180,120,0.05)', border: '1px solid rgba(212,180,120,0.2)', borderRadius: '4px', padding: '36px' }}>
+      <h3 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '22px', fontWeight: 300, color: '#d4b478', marginBottom: '24px' }}>Request a Platinum Proposal</h3>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+        <div><label style={pLabel}>Your name *</label><input name="name" value={form.name} onChange={handleChange} style={pInput} placeholder="Jane Smith" /></div>
+        <div><label style={pLabel}>Agency name *</label><input name="agency" value={form.agency} onChange={handleChange} style={pInput} placeholder="Smith & Co" /></div>
+        <div><label style={pLabel}>Email address *</label><input name="email" type="email" value={form.email} onChange={handleChange} style={pInput} placeholder="jane@smithco.com" /></div>
+        <div><label style={pLabel}>Phone number</label><input name="phone" type="tel" value={form.phone} onChange={handleChange} style={pInput} placeholder="+44 7700 000000" /></div>
+        <div><label style={pLabel}>Agency website</label><input name="website" value={form.website} onChange={handleChange} style={pInput} placeholder="www.smithco.com" /></div>
+        <div>
+          <label style={pLabel}>Active listings *</label>
+          <select name="listingsCount" value={form.listingsCount} onChange={handleChange} style={{ ...pInput, appearance: 'none' as any }}>
+            <option value="">Select range</option>
+            <option value="75-100">75–100</option>
+            <option value="100-200">100–200</option>
+            <option value="200-500">200–500</option>
+            <option value="500+">500+</option>
+          </select>
+        </div>
+      </div>
+      <div style={{ marginBottom: '16px' }}>
+        <label style={pLabel}>How did you hear about us?</label>
+        <input name="hearAbout" value={form.hearAbout} onChange={handleChange} style={pInput} placeholder="e.g. Google, referral, social media..." />
+      </div>
+      <div style={{ marginBottom: '24px' }}>
+        <label style={pLabel}>Tell us about your agency</label>
+        <textarea name="message" value={form.message} onChange={handleChange} rows={4} style={{ ...pInput, resize: 'vertical', minHeight: '100px' }} placeholder="Tell us about your agency, your current listing process, and what you're hoping to achieve with Virtual Staging IOM..." />
+      </div>
+      {status === 'error' && (
+        <p style={{ fontSize: '13px', color: '#f08080', marginBottom: '16px' }}>
+          {!form.name || !form.agency || !form.email || !form.listingsCount ? 'Please fill in all required fields.' : 'Something went wrong. Please email virtualstagingiom@gmail.com directly.'}
+        </p>
+      )}
+      <button onClick={handleSubmit} disabled={status === 'sending'} style={{ background: '#d4b478', color: '#1a1612', padding: '14px 36px', borderRadius: '2px', border: 'none', fontSize: '13px', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', cursor: status === 'sending' ? 'wait' : 'pointer', fontFamily: "'DM Sans', sans-serif" }}>
+        {status === 'sending' ? 'Sending...' : 'Request Platinum Proposal'}
+      </button>
     </div>
   )
 }
