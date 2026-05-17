@@ -100,7 +100,7 @@ function SignUpPage() {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '32px' }}>
               {[
                 { type: 'buyer' as const, title: 'Home Owner', desc: 'Visualise rooms in your style before you buy or redecorate', price: '3 free generations included' },
-                { type: 'agent' as const, title: 'Estate Agent', desc: 'Embed AI staging on your property listings', price: 'From \u00a33.99 per session' },
+                { type: 'agent' as const, title: 'Estate Agent', desc: 'Embed AI staging on your property listings', price: 'Packages from \u00a399' },
               ].map(({ type, title, desc, price }) => (
                 <div
                   key={type}
