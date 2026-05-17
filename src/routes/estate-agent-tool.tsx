@@ -23,9 +23,9 @@ const STYLES = [
 ]
 
 const ROOMS = [
-  { url: '/living-room.jpg', label: 'Living Room', roomId: 'livingroom' },
-  { url: '/kitchen.png', label: 'Kitchen', roomId: 'kitchen' },
-  { url: '/bedroom.jpg', label: 'Bedroom', roomId: 'bedroom' },
+  { url: '/living-room.png', label: 'Living Room', roomId: 'livingroom' },
+  { url: '/Kitchen.png', label: 'Kitchen', roomId: 'kitchen' },
+  { url: '/bedroom.png', label: 'Bedroom', roomId: 'bedroom' },
   { url: '/hallway.png', label: 'Hallway', roomId: 'hallway' },
   { url: '/open-plan-dining-lounge.jpg', label: 'Open Plan Dining Lounge', roomId: 'openplanlounge' },
 ]
