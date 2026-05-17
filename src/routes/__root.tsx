@@ -50,6 +50,16 @@ function RootDocument({ children }: { children: React.ReactNode }) {
           <Scripts />
         </ClerkProvider>
         {/* Hidden form for Netlify form detection */}
+        <form name="platinum-enquiry" data-netlify="true" hidden>
+          <input type="text" name="name" />
+          <input type="text" name="agency" />
+          <input type="email" name="email" />
+          <input type="tel" name="phone" />
+          <input type="text" name="website" />
+          <input type="text" name="listingsCount" />
+          <input type="text" name="hearAbout" />
+          <textarea name="message" />
+        </form>
         <form name="estate-agent-enquiry" data-netlify="true" hidden>
           <input type="text" name="name" />
           <input type="text" name="agency" />
